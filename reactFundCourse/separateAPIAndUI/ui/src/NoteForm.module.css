@@ -1,0 +1,13 @@
+.note-form {
+  display: flex;
+}
+
+.note-form-input {
+  display: block;
+  flex: 1;
+  padding: 1rem;
+}
+
+.note-form-submit {
+  padding: 1rem;
+}
