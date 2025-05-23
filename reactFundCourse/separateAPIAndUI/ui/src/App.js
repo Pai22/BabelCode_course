@@ -1,10 +1,12 @@
 import React from 'react'
-import NoteApp from './NoteApp'
+import { BrowserRouter as Router } from 'react-router-dom'
+
+import Layout from './modules/ui/components/Layout'
 
 export default function App() {
   return (
-    <>
-      <NoteApp />
-    </>
+    <Router>
+      <Layout></Layout>
+    </Router>
   )
 }

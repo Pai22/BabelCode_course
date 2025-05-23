@@ -1,6 +1,6 @@
 {
   "extends": ["react-app", "plugin:prettier/recommended"],
-  "plugins": ["unused-imports"],
+
   "rules": {
     "prettier/prettier": "off"
   }

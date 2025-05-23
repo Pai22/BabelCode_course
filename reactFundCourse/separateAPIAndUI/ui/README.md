@@ -1,4 +1,4 @@
-# React Hooks & API: Example Notebook
+# React Hooks & API: Example Notebook และการ Install Mui
 
 คู่มือรวบรวมตัวอย่างการใช้งาน React Hook ต่าง ๆ พร้อมการดึงข้อมูลจาก API และการตั้งค่า axios แบบมี config
 
@@ -482,4 +482,360 @@ export default function NoteApp() {
 
 ## 📌 css modules
 
-จัด style ของ NoteApp สามารถดูที่ไฟล์ได้เลย
+## จัด style ของ NoteApp สามารถดูที่ไฟล์ได้เลยมี css modules 3 file
+
+## 📌 Childern and Spread attributes
+
+```js
+import React from 'react'
+
+function Layout({ children }) {
+  return (
+    <>
+      <header>Header Area</header>
+      <main>{children}</main>
+      <footer>Footer Area</footer>
+    </>
+  )
+}
+
+function Product({ id, name, price }) {
+  return (
+    <dl>
+      <dt>ID:</dt>
+      <dd>{id}</dd>
+      <dt>Name:</dt>
+      <dd>{name}</dd>
+      <dt>Price:</dt>
+      <dd>{price}</dd>
+    </dl>
+  )
+}
+
+export default function App() {
+  const product = { id: 1, name: 'My Product', price: 200 }
+  return (
+    <Layout>
+      {/* layout มอง Product เป็น Children */}
+      <Product {...product}></Product>
+    </Layout>
+  )
+}
+```
+
+---
+
+## 📌 Mui
+
+การทำ Configure Babel สำหรับ react ที่สร้างโปรเจคโดยใช้ create-react-app (CRA)
+
+> Install ดูได้ที่ Docs: https://mui.com/material-ui/getting-started/installation/
+> Configure Babel เพื่อให้ Import แบบย่อได้โดยไม่ช้า
+
+```js
+import { Button } from '@mui/material' //import แบบย่อ
+```
+
+1. ติดตั้ง pkg แล้วสร้างไฟล์ .babelrc.js
+
+```cmd
+yarn add -D babel-plugin-import
+```
+
+> file: .babelrc.js
+
+```js
+const plugins = [
+  [
+    'babel-plugin-import',
+    {
+      libraryName: '@material-ui/core',
+      // Use "'libraryDirectory': ''," if your bundler does not support ES modules
+      libraryDirectory: 'esm',
+      camel2DashComponentName: false
+    },
+    'core'
+  ],
+  [
+    'babel-plugin-import',
+    {
+      libraryName: '@material-ui/icons',
+      // Use "'libraryDirectory': ''," if your bundler does not support ES modules
+      libraryDirectory: 'esm',
+      camel2DashComponentName: false
+    },
+    'icons'
+  ]
+]
+
+module.exports = { plugins }
+```
+
+2. ติดตั้ง pkg เพิ่มแล้วสร้างไฟล์ config-overrides.js
+
+```cmd
+yarn add -D react-app-rewired customize-cra
+```
+
+> file: config-overrides.js
+
+```js
+// config-overrides.js
+const { override, useBabelRc: babelRc } = require('customize-cra')
+
+module.exports = override(babelRc())
+```
+
+> หมายเหตุ: ต้องเปลี่ยนชื่อ functon ของ useBabelRc เพราะ ESLint แจ้งเตือนผิดมันเข้าใจผิดว่า useBabelRc() เป็น React Hook แต่จริง ๆ แล้ว useBabelRc มาจาก customize-cra และเป็น Webpack override helper ไม่เกี่ยวกับ React เลย
+
+3. เปลี่ยน scripts ในส่วนของ start ในไฟล์ package.json
+
+   > file: package.json
+
+   ```
+   "scripts": {
+   -    "start": "react-scripts start",
+   +    "start": "react-app-rewired start",
+     },
+   ```
+
+# จัด styled ให้กับ element ใดๆผ่านตัว Mui
+
+> ดู theme ได้จาก https://mui.com/material-ui/customization/default-theme/
+
+```js
+import React from 'react'
+import { createTheme } from '@mui/material/styles'
+import { makeStyles, ThemeProvider } from '@mui/styles' // ❗
+
+const theme = createTheme()
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    padding: theme.spacing(2), // spacing(num) ตัวเลขที่ใส่จะเอาไปคูณ 8 จะได้ 8*2 = 16px
+    margin: theme.spacing(1, 2),
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.common.white,
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.main
+    }
+  }
+}))
+
+function AppContent() {
+  const classes = useStyles()
+  return <div className={classes.root}>Hello</div>
+}
+
+export default function App() {
+  return (
+    <ThemeProvider theme={theme}>
+      {' '}
+      {/* จาก @mui/styles */}
+      <AppContent />
+    </ThemeProvider>
+  )
+}
+```
+
+--
+
+# Container VS Grid
+
+1. Container เปรียบเสมือนเป็นกล่องที่มีของอยู่ข้างใน ไม่สามารถมีขนาดกล่องเกินกว่าที่เรากำหนด
+2. Grid
+
+- Grid container เปรียบเสมือนเป็นกล่อง
+- Grid item เปรียบเสมือนเป็นสิ่งของที่วางอยู่ในกล่อง
+  > file: App.js
+
+```js
+import React from 'react'
+import { Grid, Card, CardContent } from '@mui/material'
+
+export default function App() {
+  return (
+    <Grid container justifyContent="space-between" spacing={2}>
+      <Grid item xs={12} md={6}>
+        <Card>
+          <CardContent>xs=12 md=6</CardContent>
+        </Card>
+      </Grid>
+      <Grid item xs={12} md={6}>
+        <Card>
+          <CardContent>xs=12 md=6</CardContent>
+        </Card>
+      </Grid>
+      <Grid item xs={12} md={6}>
+        <Card>
+          <CardContent>xs=12 md=6</CardContent>
+        </Card>
+      </Grid>
+      <Grid item xs={12} md={6}>
+        <Card>
+          <CardContent>xs=12 md=6</CardContent>
+        </Card>
+      </Grid>
+    </Grid>
+  )
+}
+```
+
+---
+
+> ต่อจากนี้จะเป็น workshop การสร้างโปรเจคต้องมองภาพรวมก่อนว่ามนมีส่วนย่อยๆอะไรบ้าง
+
+> file: jsconfig.json เป็นตัว config ว่าถ้าเรา import ชื่ออะไรมันจะวิ่งไปดูที่ /src ก่อน
+
+```js
+{
+  "compilerOptions": {
+    "baseUrl": "./src"
+  }
+}
+```
+
+---
+
+## 📌 React router
+
+install react-router-dom เป็นตัวบอกเส้นทาง
+
+```cmd
+yarn add react-router-dom
+```
+
+> ใช้ import { BrowserRouter as Router } from 'react-router-dom' แล้วครอบทับอยู่บนสุด ต่อไปนี้อะไรที่เป็นลูกของ tag router ก็จะสามารถประกาศ route หรือว่าเส้นทางได้
+
+- กำหนด BrowserRouter ไว้หน้า App แล้วเรียกใช้ในหน้า /ui/Content เพื่อที่จะสร้าง Route แต่ละ components
+
+> File: App.js
+
+```js
+import React from 'react'
+import { BrowserRouter as Router } from 'react-router-dom'
+
+import Layout from './modules/ui/components/Layout'
+
+export default function App() {
+  return (
+    <Router>
+      <Layout></Layout>
+    </Router>
+  )
+}
+```
+
+> File: Contents.js in Folder /ui
+
+```js
+import React from 'react'
+import { Container, Toolbar, Snackbar, Button } from '@mui/material'
+import { makeStyles, ThemeProvider } from '@mui/styles'
+import { createTheme } from '@mui/material/styles'
+
+import ContentsRoutes from './Routes'
+
+const theme = createTheme()
+
+const useStyles = makeStyles((theme) => ({
+  content: {
+    padding: theme.spacing(2, 0)
+  }
+}))
+
+function Contents() {
+  const classes = useStyles()
+  return (
+    <main className={classes.content}>
+      <Container maxWidth="lg">
+        <Toolbar></Toolbar>
+        <ContentsRoutes></ContentsRoutes>
+        <Snackbar
+          open
+          message="Hello"
+          action={
+            <Button color="inherit" size="small">
+              Close
+            </Button>
+          }
+        />
+      </Container>
+    </main>
+  )
+}
+
+export default function Content() {
+  return (
+    <ThemeProvider theme={theme}>
+      <Contents></Contents>
+    </ThemeProvider>
+  )
+}
+```
+
+> File: Routes.js in Folder /ui
+
+```js
+import React from 'react'
+import { Routes, Route } from 'react-router-dom'
+
+import ProductRoutes from 'modules/products/components/Routes'
+import CartRoutes from 'modules/cart/components/Routes'
+
+export default function ContentsRoutes() {
+  // ❌ ใช้ชื่อ Routes() เป็นฟังก์ชันแบบนี้จะชนกับ Routes ที่ import มาด้านบน
+
+  return (
+    <Routes>
+      <Route path="/products/*" element={<ProductRoutes />} />
+      <Route path="/cart/*" element={<CartRoutes />} />
+      {/* ใช้ * เพราะมี Route ซ้อนกัน */}
+    </Routes>
+  )
+}
+```
+
+> File: Routes.js in Folder /Cart
+
+```js
+import React from 'react'
+import { Routes, Route } from 'react-router-dom'
+
+import Cart from './Cart'
+
+export default function CartRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<Cart />} />
+    </Routes>
+  )
+}
+```
+
+> File: Routes.js in Folder /Product
+
+```js
+import React from 'react'
+import { Routes, Route } from 'react-router-dom'
+
+import ProductList from './ProductList'
+import ProductDetails from './ProductDetails'
+
+export default function ProductRoutes() {
+  // ❌ ใช้ชื่อ Routes() เป็นฟังก์ชันแบบนี้จะชนกับ Routes ที่ import มาด้านบน
+
+  return (
+    <>
+      <Routes>
+        <Route path="/" element={<ProductList />} />
+        <Route path=":id" element={<ProductDetails />} />
+      </Routes>
+    </>
+  )
+}
+```
+
+---
+
+## 📌 useRouteMatch
