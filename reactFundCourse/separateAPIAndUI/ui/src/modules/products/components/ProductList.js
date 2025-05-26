@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { Typography, Grid, CircularProgress } from '@mui/material'
 import { makeStyles, ThemeProvider } from '@mui/styles'
 import { createTheme } from '@mui/material/styles'
+import { useLocation } from 'react-router-dom'
 import axios from 'axios'
+import queryString from 'query-string'
 
 import CategoryList from './CategoryList'
 import ProductItem from './ProductItem'
@@ -23,22 +25,24 @@ function ProductListContent() {
   const classes = useStyles()
   const [products, setPreoducts] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  const { search } = useLocation()
+  const { category } = queryString.parse(search)
 
   useEffect(() => {
     const loadProducts = async () => {
       setIsLoading(true)
-      const { data } = await axios.get('/products')
+      const { data } = await axios.get(`/products${search}`)
 
       setPreoducts(data)
       setIsLoading(false)
     }
     loadProducts()
-  }, [])
+  }, [search])
 
   return (
     <>
       <Typography variant="h4" component="h1" className={classes.title}>
-        All Products
+        {category || 'All'} Products
       </Typography>
       <CategoryList></CategoryList>
       {isLoading ? (

@@ -638,7 +638,7 @@ export default function App() {
 }
 ```
 
---
+---
 
 # Container VS Grid
 
@@ -683,7 +683,7 @@ export default function App() {
 
 ---
 
-> ต่อจากนี้จะเป็น workshop การสร้างโปรเจคต้องมองภาพรวมก่อนว่ามนมีส่วนย่อยๆอะไรบ้าง
+## 🗝️ ต่อจากนี้จะเป็น workshop การสร้างโปรเจคต้องมองภาพรวมก่อนว่ามนมีส่วนย่อยๆอะไรบ้าง
 
 > file: jsconfig.json เป็นตัว config ว่าถ้าเรา import ชื่ออะไรมันจะวิ่งไปดูที่ /src ก่อน
 
@@ -697,7 +697,7 @@ export default function App() {
 
 ---
 
-## 📌 React router
+## 📌 React-router-dom: React router
 
 install react-router-dom เป็นตัวบอกเส้นทาง
 
@@ -708,8 +708,7 @@ yarn add react-router-dom
 > ใช้ import { BrowserRouter as Router } from 'react-router-dom' แล้วครอบทับอยู่บนสุด ต่อไปนี้อะไรที่เป็นลูกของ tag router ก็จะสามารถประกาศ route หรือว่าเส้นทางได้
 
 - กำหนด BrowserRouter ไว้หน้า App แล้วเรียกใช้ในหน้า /ui/Content เพื่อที่จะสร้าง Route แต่ละ components
-
-> File: App.js
+  > File: App.js
 
 ```js
 import React from 'react'
@@ -838,4 +837,581 @@ export default function ProductRoutes() {
 
 ---
 
-## 📌 useRouteMatch
+## 📌 React-router-dom: Hook()
+
+react-router-dom v6 ไม่สามารถใช้ useRouteMatch()
+
+| React Router v5 (เก่า)      | React Router v6 (ใหม่)             |
+| --------------------------- | ---------------------------------- |
+| `useRouteMatch()` ✅        | ❌ ไม่มี `useRouteMatch()`         |
+| `<Switch>` ✅               | ❌ ยกเลิก ใช้ `<Routes>` แทน       |
+| `<Route component={...} />` | `<Route element={<... />} />`      |
+| Path matching แบบ `exact`   | ใช้ path matching ใหม่โดยอัตโนมัติ |
+
+ใน v6 คุณสามารถใช้:
+
+- useMatch() → สำหรับเช็กว่า path ตรงกับ pattern ไหม
+
+- useParams() → ดึงค่า param จาก URL
+
+- useLocation() → อ่าน current location
+
+- useNavigate() → แทน useHistory()
+
+---
+
+## 📌 React-router-dom: Link
+
+ใช้ Link ของ react-router-dom เพราะว่าถ้าใช้ของ Mui ตอนกดไปหน้า Home หรือหน้าอื่นๆจะมีการ render หน้าจอหรือกระพลิิบทำให้ไม่สมูท
+
+```js
+import { Link as RouterLink } from 'react-router-dom'
+
+function HeaderContent() {
+  const classes = useStyles()
+  return (
+  <RouterLink to='/'>Home</RouterLink>
+  <Link
+    component={RouterLink}
+    to="/"
+    color="inherit"
+    underline="none"
+    className={classes.logoLink}
+  >
+    <img src={logo} alt="Babel Shopping" className={classes.logoImage} />
+  </Link>
+  <Link
+    component={RouterLink}
+    to="/products"
+    color="inherit"
+    underline="none"
+    style={{ marginLeft: 8 }}
+  >
+    Products
+  </Link>
+  )}
+```
+
+> เป็นการบอกว่า componente ที่แท้จริงที่แสดงผลนั้นคืออะไร ในที่นี้คือ เราใช้ tag Link ของ Mui เพื่อให้จัด ui ได้แต่ tag ที่ทำงานนั้นเป็นของ Link router-dom (ดูจาก componente)
+
+---
+
+## 📌 React-router-dom: useHistory --> useNavigate (ปัจจุบัน)
+
+บางสถานการณ์ที่เราไม่สามารถใช้ Link เปลี่ยนหน้า page ได้จึงต้องใช้ useNavigate ในการเปลียนหน้าเพจแทน
+
+```js
+import { useNavigate } from 'react-router-dom'
+
+function HeaderContent() {
+  const navigate = useNavigate()
+
+  const navigateToCart = () => navigate('/cart')
+
+  return (
+    <IconButton color="inherit" onClick={navigateToCart}>
+      <Badge badgeContent={5} color="secondary">
+        <ShoppingCart></ShoppingCart>
+      </Badge>
+    </IconButton>
+  )
+}
+```
+
+> หมายเหตุ: ใช้ useNavigate แทน useHistory ใน v6 up
+
+---
+
+## 📌 React-router-dom: useRouteMatch --> useMatch (ปัจจุบัน)
+
+ใช้สำหรับ เช็กว่าปัจจุบันตรงกับ path ที่เราระบุไว้หรือไม่ และดึง ข้อมูลพารามิเตอร์จาก URL
+
+### 📦 ผลลัพธ์ของ useMatch
+
+```js
+{
+  params: { id: '123' },
+  pathname: '/products/123',
+  pattern: { path: '/products/:id', caseSensitive: false, end: true }
+}
+
+```
+
+> useMatch = ตรวจสอบว่าปัจจุบันตรงกับ path ที่ระบุหรือไม่ และดึง param ได้ เหมาะใช้ในสถานการณ์ที่อยู่นอก <Route> หรืออยากเช็ก path เฉพาะเจาะจง
+
+### 🟦 ใช้ useMatch() เช็ก path และอ่าน param
+
+```js
+// ProductDetailsMatch.js
+import React from 'react'
+import { useMatch } from 'react-router-dom'
+
+export default function ProductDetailsMatch() {
+  const match = useMatch('/products/:id')
+
+  if (!match) {
+    return <div>Not matched</div>
+  }
+
+  const { id } = match.params
+
+  return (
+    <div>
+      <h2>Matched Path: /products/:id</h2>
+      <p>Product ID: {id}</p>
+    </div>
+  )
+}
+```
+
+---
+
+## 📌 React-router-dom: useLocation()
+
+useLocation() ใน React Router ใช้เพื่อ อ่านตำแหน่งปัจจุบันของ URL ค่ะ เช่น pathname, search (query string), hash ฯลฯ
+
+### ✅ ตัวอย่างข้อมูลที่ได้จาก useLocation()
+
+```js
+{
+  pathname: "/products/123",
+  search: "?ref=homepage",
+  hash: "#section1",
+  state: null,
+  key: "abc123"
+}
+
+```
+
+### 🧪 ตัวอย่างการใช้งานจริง
+
+```js
+import React from 'react'
+import { useLocation } from 'react-router-dom'
+
+export default function LocationInfo() {
+  const location = useLocation()
+
+  return (
+    <div>
+      <h3>Current Path Info</h3>
+      <p>Pathname: {location.pathname}</p>
+      <p>Search: {location.search}</p>
+      <p>Hash: {location.hash}</p>
+    </div>
+  )
+}
+```
+
+---
+
+## 📌 React-router-dom: useParams()
+
+ช้เพื่อ ดึงค่าพารามิเตอร์จาก URL ที่กำหนดไว้ในเส้นทาง (route) ค่ะ เช่น /productsฝ:id → ดึงค่า id ออกมา
+
+### ✅ ใช้ในกรณีไหน
+
+สมมุติเรากำหนดเส้นทางแบบนี้ใน Route:
+
+```js
+<Route path="/products/:id" element={<ProductDetail />} />
+```
+
+ถ้าเปิดหน้า /products/123 → React Router จะส่ง id = "123" มาให้
+
+### 🧪 ตัวอย่างการใช้งาน
+
+```js
+import React from 'react'
+import { useParams } from 'react-router-dom'
+
+export default function ProductDetail() {
+  const { id } = useParams()
+
+  return (
+    <div>
+      <h2>Product Detail</h2>
+      <p>Product ID: {id}</p>
+    </div>
+  )
+}
+```
+
+### 🧠 สรุปการใช้งาน
+
+| ต้องการ         | เขียน Route                      | ใช้ใน Component                           |
+| --------------- | -------------------------------- | ----------------------------------------- |
+| อ่านค่าจาก path | `/users/:userId`                 | `const { userId } = useParams()`          |
+| หลาย params     | `/users/:userId/orders/:orderId` | `const { userId, orderId } = useParams()` |
+
+> หมายเหตุ: `useParams()` จะคืนค่าเป็น object ของพารามิเตอร์ทั้งหมดใน path และ ใช้ เฉพาะกับ Route ที่มี param เท่านั้น (มี `:`)
+
+---
+
+## 📌 query-string
+
+query-string คือไลบรารีที่สามารถ
+
+- แปลง query string เป็น object (เช่น `?page=2&sort=asc`→ `{ page: '2', sort: 'asc' }`)
+- แปลง object เป็น query string (เช่น `{ page: 2, sort: 'asc' }` → `?page=2&sort=asc`)
+
+```cmd
+yarn add query-string
+```
+
+### ✅ ตัวอย่างการใช้งาน
+
+1. แปลง `query string` → `object`
+
+```js
+import queryString from 'query-string'
+
+const query = '?page=2&sort=asc'
+const parsed = queryString.parse(query)
+
+console.log(parsed) // { page: '2', sort: 'asc' }
+```
+
+2. แปลง `object` → `query string`
+
+```js
+import queryString from 'query-string'
+
+const obj = { page: 2, sort: 'asc' }
+const query = queryString.stringify(obj)
+
+console.log(query) // page=2&sort=asc
+```
+
+> `{category || 'All'}` บ่งบอกว่าถ้า category เป็น null จะแสดงคำว่า All
+
+---
+
+## 📌 Navigate ( แทน Redirect )
+
+เมื่อเราคลิกไปที่หน้า Home แต่ Home page ไม่มีอะไร ต้องการให้มันเด้งไปหน้า products แทน
+
+### 🔁 เปลี่ยนเส้นทางอัตโนมัติ (Auto Redirect)
+
+```js
+import React from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+
+import ProductRoutes from 'modules/products/components/Routes'
+import CartRoutes from 'modules/cart/components/Routes'
+
+export default function ContentsRoutes() {
+  // ❌ ใช้ชื่อ Routes() เป็นฟังก์ชันแบบนี้จะชนกับ Routes ที่ import มาด้านบน
+
+  return (
+    <Routes>
+      {/* ใช้ `*` เพราะมี Route ซ้อนกัน */}
+      <Route path="/products/*" element={<ProductRoutes />} />
+      <Route path="/cart/*" element={<CartRoutes />} />
+      {/* Redirect หน้าแรก */}
+      <Route exact path="/" element={<Navigate to="/products" />} />
+    </Routes>
+  )
+}
+```
+
+> หมายเหตุ: ถ้าไม่ใส่ exact หน้าที่ไม่มีอยู่จริงก็จะเข้าเงื่อนไขกับ path="/" ด้วย
+
+### 🔐 ตัวอย่างกรณี redirect เมื่อยังไม่ login
+
+```js
+import { Navigate } from 'react-router-dom'
+
+function ProtectedRoute({ isLoggedIn, children }) {
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />
+  }
+  return children
+}
+```
+
+ใช้ใน Route แบบนี้:
+
+```js
+<Route
+  path="/dashboard"
+  element={
+    <ProtectedRoute isLoggedIn={user?.loggedIn}>
+      <Dashboard />
+    </ProtectedRoute>
+  }
+/>
+```
+
+> ✅ ถ้า `user.loggedIn` เป็น `false` → ระบบจะ redirect ไปหน้า `/login`
+
+### 🔙 Redirect ไปหน้าก่อนหน้า (Back)
+
+```js
+import { useNavigate } from 'react-router-dom'
+
+function BackButton() {
+  const navigate = useNavigate()
+
+  return <button onClick={() => navigate(-1)}>ย้อนกลับ</button>
+}
+```
+
+### จัดการเกี่ยวกับหน้าที่ไม่มีอยู่จริง
+
+```js
+import React from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+
+import ProductRoutes from 'modules/products/components/Routes'
+import CartRoutes from 'modules/cart/components/Routes'
+
+export default function ContentsRoutes() {
+  // ❌ ใช้ชื่อ Routes() เป็นฟังก์ชันแบบนี้จะชนกับ Routes ที่ import มาด้านบน
+
+  return (
+    <Routes>
+      {/* ใช้ `*` เพราะมี Route ซ้อนกัน */}
+      <Route path="/products/*" element={<ProductRoutes />} />
+      <Route path="/cart/*" element={<CartRoutes />} />
+      {/* Redirect หน้าแรก */}
+      <Route exact path="/" element={<Navigate to="/products" />} />
+      {/* 404 Page Not Found */}
+      <Route path="*" element={<div>Page not found</div>} />
+    </Routes>
+  )
+}
+```
+
+> path="\*" → จับทุกเส้นทางที่ไม่ตรงกับ route ด้านบน → ใช้แสดง หน้า 404
+
+---
+
+## 📌 React-hook-form
+
+ทำการติดตั้ง package ก่อน
+
+```cmd
+yarn add react-hook-form
+```
+
+### ตัวอย่างโค้ด
+
+```js
+import React from 'react'
+import { useForm } from 'react-hook-form'
+
+export default function App() {
+  const { register, handleSubmit } = useForm({
+    defaultValues: {
+      gender: 'Female'
+    }
+  })
+
+  const onSubmit = (data) => {
+    console.log(data)
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input type="text" placeholder="Email" {...register('email')} />
+      <input type="password" placeholder="Password" {...register('password')} />
+      <input type="text" placeholder="gender" {...register('gender')} />
+      <button type="submit">Submit</button>
+    </form>
+  )
+}
+```
+
+---
+
+## 📌 ตรวจสอบความถูกต้องของฟอร์มด้วย Yup
+
+Yup เป็นสิ่งที่ใช้ในการ validate ข้อมูลใน form ของเราที่เป็น Opjecte
+
+### ติดตั้ง package
+
+```cmd
+yarn add @hookform/resolvers yup
+
+```
+
+> การ validate ข้อมูล (data validation) หมายถึง การตรวจสอบความถูกต้องและคุณภาพของข้อมูล เพื่อให้มั่นใจว่าข้อมูลที่รวบรวมมานั้นมีคุณภาพสูง และสามารถนำไปใช้งานได้อย่างถูกต้องและมีประสิทธิภาพ
+
+## โค้ดตัวอย่างการตรวจสอบข้อมูล
+
+```js
+import React from 'react'
+import { useForm } from 'react-hook-form'
+import * as yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup'
+
+export default function App() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm({
+    mode: 'onBlur', // เมื่อมีการเปลี่ยนแปลง input จะ validate ทันที
+    defaultValues: {
+      gender: 'Female'
+    },
+    resolver: yupResolver(
+      yup.object().shape({
+        email: yup.string().required(), // required บ่งบอกว่าช่องนี้ต้องใส่ทุกครั้ง
+        password: yup.string().min(8).required(),
+        gender: yup.mixed().oneOf(['Male', 'Female'])
+      })
+    )
+  })
+
+  const onSubmit = (data) => {
+    console.log(data)
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input type="text" placeholder="Email" {...register('email')} />
+      {errors.email && <div>{errors.email.message}</div>}
+      <input type="password" placeholder="Password" {...register('password')} />
+      {errors.password && <div>{errors.password.message}</div>}
+      <input type="text" placeholder="gender" {...register('gender')} />
+      {errors.gender && <div>{errors.gender.message}</div>}
+      <button type="submit">Submit</button>
+    </form>
+  )
+}
+```
+
+โครงสร้างของ yup
+
+```js
+let userSchema = object({
+  name: string().required(),
+  age: number().required().positive().integer(),
+  email: string().email(),
+  website: string().url().nullable(),
+  createdOn: date().default(() => new Date())
+})
+```
+
+จัดการ form
+
+> File: Delivery.js
+
+```js
+import React from 'react'
+import makeStyles from '@mui/styles/makeStyles'
+import { createTheme, ThemeProvider } from '@mui/material'
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
+import {
+  CardContent,
+  TextField,
+  Typography,
+  Card,
+  CardActions,
+  Button,
+  Stack
+} from '@mui/material'
+
+const theme = createTheme()
+
+const useStyles = makeStyles((theme) => ({
+  form: {
+    '& > * + *': {
+      marginTop: theme.spacing(2)
+    }
+  },
+  submitBtn: {
+    flex: 1 // กำหนดให้ Button กินพื้นที่เต็ม
+  }
+}))
+
+const schema = yup.object().shape({
+  name: yup.string().required(),
+  email: yup.string().email().required(),
+  address: yup.string().required()
+})
+
+export default function Delivery() {
+  const classes = useStyles()
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm({
+    resolver: yupResolver(schema)
+  })
+
+  const submit = (deliveryInfo) => {
+    console.log(deliveryInfo)
+  }
+
+  return (
+    <ThemeProvider theme={theme}>
+      <form onSubmit={handleSubmit(submit)} autoComplete="off">
+        <Card>
+          <CardContent className={classes.form}>
+            <Typography variant="h5" component="h2">
+              Delivery Information
+            </Typography>
+            <Stack spacing={2}>
+              <TextField
+                {...register('name')}
+                variant="outlined"
+                label="Name"
+                placeholder="Enter your fullname"
+                name="name"
+                fullWidth
+                helperText={errors.name?.message || ''} // helperText ของ TextField ข้อความที่เป็นตัวช่วย
+                error={!!errors.name} // error={true} ของ TextField จะแสดงข้อความเป็นสีแดงพร้อมกรอบ
+                //error={!!errors.name} ใส่เครื่ิงหมายตกใจ 2 ครั้งเป็นการทำให้ errors.name เป็น boolean
+              />
+              <TextField
+                {...register('email')}
+                type="email"
+                variant="outlined"
+                label="email"
+                placeholder="Enter your email"
+                name="email"
+                fullWidth
+                helperText={errors.email?.message || ''}
+                error={!!errors.email}
+              />
+              <TextField
+                {...register('address')}
+                multiline
+                rows={4}
+                variant="outlined"
+                label="Address"
+                placeholder="Enter your fullname"
+                name="address"
+                fullWidth
+                helperText={errors.address?.message || ''}
+                error={!!errors.address}
+              />
+            </Stack>
+          </CardContent>
+          <CardActions>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              className={classes.submitBtn}
+            >
+              Place Order
+            </Button>
+          </CardActions>
+        </Card>
+      </form>
+    </ThemeProvider>
+  )
+}
+```
+
+---
+
+## 📌 Redux คืออะไร ทำไมจึงสำคัญ

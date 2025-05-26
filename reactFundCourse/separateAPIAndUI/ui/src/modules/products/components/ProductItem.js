@@ -10,6 +10,7 @@ import {
 } from '@mui/material'
 import { makeStyles, ThemeProvider } from '@mui/styles'
 import { createTheme } from '@mui/material/styles'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 import currencyFormat from 'utils/currencyFormat'
 
@@ -26,10 +27,14 @@ const useStyles = makeStyles((theme) => ({
 
 function ProductItemCons({ id, name, desc, image, category, price }) {
   const classes = useStyles()
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+
+  const navigateToDetailst = () => navigate(`${pathname}/${id}`)
 
   return (
     <Grid item size={{ xs: 12, sm: 6, lg: 4 }}>
-      <Card>
+      <Card onClick={navigateToDetailst}>
         <CardActionArea>
           <CardMedia image={image} title={name} className={classes.media} />
           <CardContent>

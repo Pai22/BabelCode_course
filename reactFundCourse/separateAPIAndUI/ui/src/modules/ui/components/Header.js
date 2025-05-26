@@ -8,9 +8,11 @@ import {
   IconButton,
   Badge
 } from '@mui/material'
+import { Link as RouterLink } from 'react-router-dom'
 import { ShoppingCart } from '@mui/icons-material'
 import { makeStyles, ThemeProvider } from '@mui/styles'
 import { createTheme } from '@mui/material/styles'
+import { useNavigate } from 'react-router-dom'
 
 import logo from 'assets/images/logo.png'
 
@@ -34,11 +36,16 @@ const useStyles = makeStyles((theme) => ({
 
 function HeaderContent() {
   const classes = useStyles()
+  const navigate = useNavigate()
+
+  const navigateToCart = () => navigate('/cart')
+
   return (
     <AppBar position="fixed" className={classes.appBar}>
       <Toolbar>
         <Link
-          href="/"
+          component={RouterLink}
+          to="/"
           color="inherit"
           underline="none"
           className={classes.logoLink}
@@ -46,7 +53,8 @@ function HeaderContent() {
           <img src={logo} alt="Babel Shopping" className={classes.logoImage} />
         </Link>
         <Link
-          href="/products"
+          component={RouterLink}
+          to="/products"
           color="inherit"
           underline="none"
           style={{ marginLeft: 8 }}
@@ -58,7 +66,7 @@ function HeaderContent() {
           control={<Switch color="sencondary" />}
           label="Dark"
         ></FormControlLabel>
-        <IconButton color="inherit">
+        <IconButton color="inherit" onClick={navigateToCart}>
           <Badge badgeContent={5} color="secondary">
             <ShoppingCart></ShoppingCart>
           </Badge>

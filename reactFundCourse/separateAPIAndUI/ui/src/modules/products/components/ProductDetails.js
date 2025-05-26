@@ -9,6 +9,7 @@ import {
 } from '@mui/material'
 import { makeStyles, ThemeProvider } from '@mui/styles'
 import { createTheme } from '@mui/material/styles'
+import { useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 
 const theme = createTheme()
@@ -30,9 +31,13 @@ const useStyles = makeStyles((theme) => ({
 
 function ProductDetailsCons() {
   const classes = useStyles()
-  const id = 1
+  // const id = 1
   const [product, setProduct] = useState()
   const isMediumUp = useMediaQuery(theme.breakpoints.up('md'))
+  const navigate = useNavigate()
+  const { id } = useParams()
+
+  const buyNow = () => navigate('/cart')
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -41,7 +46,7 @@ function ProductDetailsCons() {
       setProduct(data)
     }
     loadProduct()
-  }, [])
+  }, [id])
 
   if (!product) return null
 
@@ -70,7 +75,7 @@ function ProductDetailsCons() {
             </Grid>
             <Grid item>
               <ButtonGroup variant="contained" aria-label="Basic button group">
-                <Button>Buy Now</Button>
+                <Button onClick={buyNow}>Buy Now</Button>
                 <Button>Add to Cart</Button>
               </ButtonGroup>
             </Grid>
