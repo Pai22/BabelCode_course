@@ -1415,3 +1415,120 @@ export default function Delivery() {
 ---
 
 ## 📌 Redux คืออะไร ทำไมจึงสำคัญ
+
+วิธีจัดการกับ state ที่ไหลเวียนอยู่ในแอพอย่างมีประสิทธิภาพ
+หลักการของ Redux เรียกว่า Redux Principles
+
+1. Redux Principles: Single source of truth
+
+- ความหมายคือ ความจริงมีอยู่แค่หนึ่งเดียวและอยู่ภายใต้ store สมมติมีข้อมูลและก็ state ที่ใใช้งานอยู่ในแอปพลิเคชันของเรา ข้อมูลเหล่านั้นก็จะถูกจัดเก็บอยู่ภายใต้ store แค่ตัวเดียว นั่นคือ store ไม่สามารถมีได้มากกว่าหนึ่งตัว
+- ถ้ามี store แค่ตัวเดียวก็จะมี component หลายๆตัวมาเกาะอยู่ store
+- component แต่ละตัวสามารถอ่านค่าข้อมูลจาก store ได้แลเวเอาค่าข้อมูลนั้นไปทำการ render หรือแสดงผลบน component และ component ยังสามารถเขียนค่าข้อมูลลงไปยังใน store ได้
+- ถ้ามี component ตัวนึงทำการ subscribe (subscribe คือทำการอ่านข้อมูลบน store) แล้ว component อีก 3 ตัวทำการเขียนข้อมูลไปบน store แล้ว component ที่กำลังอ่านข้อมูลบน store จะรู้ได้ยังไงว่าการเปลี่ยนแปลงข้อมูลมาจาก component ไหน `จึงต้องไปหลักการข้อ 2`
+
+2. Redux Principles: Store is read only
+
+- ความหมายคืิอ Views หรือ componete จะสามารถอ่านค่าจาก store ได้เท่านั้นไม่สามารถเขียนค่าไปบน store ได้
+- ตัว views หรือ component เมื่อเกิดเหตุการณ์นึ่งขึ้นมา เช่นคลิกปุ่ม ก็จะทำการสร้าง actions เมื่อสร้างเสร็จก็จะถูกส่งไปยัง reducers กระบวนการส่งเรียกว่่า dispatch แล้ว reducers จะทำการลดข้อมูลคือเอาข้อมูลเฉพาะที่สนใจแล้วส่งไปยัง store
+- จะเห็นได้ว่า component จะทำหน้าที่อยู่ 2 อย่างจึงต้องแยกหน้าที่ใน generate หรือ สร้างตัว Actions มาเพิ่ม เรียกว่า Action Creators มีหน้าที่ในการสร้างตัว Action ออกมา
+
+3. Redux Principles: Changes are made with pure functions (เพียว function)
+
+- ตัว Reducers จะต้องเป็นเพียว function
+
+### ติดตั้งตัว package
+
+```cmd
+yarn add redux react-redux
+```
+
+ติดตั้ง package ของ redux-devtools ใน Chrome
+
+```cmd
+yarn add -D redux-devtools-extension
+```
+
+---
+
+## 📌 วิธีการสร้าง store พร้อมกับใช้งาน reduucers
+
+1. สร้าง folder store แล้วใน folder store มีไฟล์ configureStore.js
+   > file: configureStore.js
+
+```js
+import { createStore, applyMiddleware } from 'redux'
+import { composeWithDevTools } from 'redux-devtools-extension'
+
+import rootReducer from 'modules/reducers'
+
+export default function configureStore(initialState) {
+  const middleware = []
+  const store = createStore(
+    rootReducer,
+    initialState,
+    composeWithDevTools(applyMiddleware(...middleware))
+  )
+
+  return store
+}
+```
+
+2. สร้างไฟล์ reducers.js ไว้แต่ละ folder
+   > file: /modules/reducers.js
+
+```js
+import { combineReducers } from 'redux'
+
+import ui from './ui/reducer'
+import products from './products/reducer'
+import cart from './cart/reducer'
+
+export default combineReducers({
+  ui,
+  products,
+  cart
+})
+```
+
+> file: /modules/ui/reducers.js
+
+```js
+const initialState = {}
+
+export default function (state = initialState, action) {
+  switch (action.type) {
+    default:
+      return state
+  }
+}
+```
+
+> file: /modules/cart/reducers.js
+
+```js
+const initialState = {}
+
+export default function (state = initialState, action) {
+  switch (action.type) {
+    default:
+      return state
+  }
+}
+```
+
+> file: /modules/products/reducers.js
+
+```js
+const initialState = {}
+
+export default function (state = initialState, action) {
+  switch (action.type) {
+    default:
+      return state
+  }
+}
+```
+
+---
+
+## 📌 Actions และ Action Creators
