@@ -1,4 +1,5 @@
 import React from 'react'
+import { useDispatch } from 'react-redux'
 import makeStyles from '@mui/styles/makeStyles'
 import { createTheme, ThemeProvider } from '@mui/material'
 import {
@@ -11,6 +12,8 @@ import {
 } from '@mui/material'
 import { Delete } from '@mui/icons-material'
 import currencyFormat from 'utils/currencyFormat'
+
+import * as cartActions from '../action'
 
 const theme = createTheme()
 
@@ -26,8 +29,11 @@ const useStyles = makeStyles((theme) => ({
   }
 }))
 
-function CartProductCons({ image, name, price }) {
+function CartProductCons({ id, image, name, price }) {
   const classes = useStyles()
+  const dispatch = useDispatch()
+
+  const remove = () => dispatch(cartActions.removeFromCart(id))
 
   return (
     <Card className={classes.product}>
@@ -41,7 +47,7 @@ function CartProductCons({ image, name, price }) {
             <div>{currencyFormat(price)}</div>
           </Grid>
           <Grid item>
-            <IconButton aria-label="delete" size="small">
+            <IconButton aria-label="delete" size="small" onClick={remove}>
               <Delete></Delete>
             </IconButton>
           </Grid>

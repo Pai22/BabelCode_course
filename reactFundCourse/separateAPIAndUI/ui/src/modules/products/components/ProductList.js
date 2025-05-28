@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Typography, Grid, CircularProgress } from '@mui/material'
 import { makeStyles, ThemeProvider } from '@mui/styles'
 import { createTheme } from '@mui/material/styles'
 import { useLocation } from 'react-router-dom'
-import axios from 'axios'
+
 import queryString from 'query-string'
 
 import * as actions from '../actions'
@@ -25,29 +25,15 @@ const useStyles = makeStyles((theme) => ({
 
 function ProductListContent() {
   const classes = useStyles()
-  // const [products, setPreoducts] = useState([])
-  // const [isLoading, setIsLoading] = useState(false)
+  const dispatch = useDispatch()
+  const { isLoading, items: products } = useSelector((state) => state.products)
   const { search } = useLocation()
   const { category } = queryString.parse(search)
-  const dispatch = useDispatch()
-  const { isLoading, item: products } = useSelector((state) => state.products)
-
-  // useEffect(() => {
-  //   const loadProducts = async () => {
-  //     setIsLoading(true)
-  //     const { data } = await axios.get(`/products${search}`)
-
-  //     setPreoducts(data)
-  //     setIsLoading(false)
-  //   }
-  //   loadProducts()
-  // }, [search])
 
   useEffect(() => {
-    const action = actions.loadProducts()
-
+    const action = actions.loadProducts(search)
     dispatch(action)
-  }, [dispatch])
+  }, [dispatch, search])
 
   return (
     <>
@@ -61,8 +47,8 @@ function ProductListContent() {
         </div>
       ) : (
         <Grid container spacing={2}>
-          {products.map((products) => (
-            <ProductItem key={products.id} {...products}></ProductItem>
+          {products.map((product) => (
+            <ProductItem key={product.id} {...product}></ProductItem>
           ))}
         </Grid>
       )}

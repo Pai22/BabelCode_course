@@ -41,6 +41,7 @@ function HeaderContent() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const darkMode = useSelector((state) => state.ui.darkMode)
+  const cartCount = useSelector((state) => state.cart.productIds).length
 
   const navigateToCart = () => navigate('/cart')
 
@@ -81,7 +82,7 @@ function HeaderContent() {
           label="Dark"
         ></FormControlLabel>
         <IconButton color="inherit" onClick={navigateToCart}>
-          <Badge badgeContent={5} color="secondary">
+          <Badge badgeContent={cartCount} color="secondary">
             <ShoppingCart></ShoppingCart>
           </Badge>
         </IconButton>

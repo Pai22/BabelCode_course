@@ -1532,3 +1532,7 @@ export default function (state = initialState, action) {
 ---
 
 ## 📌 Actions และ Action Creators
+
+<!--!!! กลับไปดู บริหาร state ในแอพพลิเคชันด้วย Redux -->
+
+## 📌 Deployment

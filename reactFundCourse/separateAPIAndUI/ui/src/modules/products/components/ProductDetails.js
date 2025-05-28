@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   Paper,
   Grid,
@@ -10,7 +11,9 @@ import {
 import { makeStyles, ThemeProvider } from '@mui/styles'
 import { createTheme } from '@mui/material/styles'
 import { useNavigate, useParams } from 'react-router-dom'
-import axios from 'axios'
+
+import * as productActions from '../actions'
+import * as cartActions from 'modules/cart/action'
 
 const theme = createTheme()
 
@@ -30,23 +33,27 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 function ProductDetailsCons() {
-  const classes = useStyles()
-  // const id = 1
-  const [product, setProduct] = useState()
-  const isMediumUp = useMediaQuery(theme.breakpoints.up('md'))
-  const navigate = useNavigate()
   const { id } = useParams()
-
-  const buyNow = () => navigate('/cart')
+  const classes = useStyles()
+  const dispatch = useDispatch()
+  const [product] = useSelector((state) => state.products.items)
+  const productIds = useSelector((state) => state.cart.productIds)
+  const exists = productIds.includes(id)
+  const navigate = useNavigate()
+  const isMediumUp = useMediaQuery(theme.breakpoints.up('md'))
 
   useEffect(() => {
-    const loadProduct = async () => {
-      const { data } = await axios.get(`/products/${id}`)
+    const action = productActions.loadProduct(id)
 
-      setProduct(data)
-    }
-    loadProduct()
-  }, [id])
+    dispatch(action)
+  }, [dispatch, id])
+
+  const addToCart = () => dispatch(cartActions.addToCart(id))
+
+  const buyNow = () => {
+    dispatch(cartActions.addToCart(id))
+    navigate('/cart')
+  }
 
   if (!product) return null
 
@@ -63,7 +70,7 @@ function ProductDetailsCons() {
         <Grid item>
           <Grid
             container
-            classesName={classes.content}
+            className={classes.content}
             direction="column"
             justifyContent="space-between"
           >
@@ -73,12 +80,17 @@ function ProductDetailsCons() {
               </Typography>
               <p>{product.desc}</p>
             </Grid>
-            <Grid item>
-              <ButtonGroup variant="contained" aria-label="Basic button group">
-                <Button onClick={buyNow}>Buy Now</Button>
-                <Button>Add to Cart</Button>
-              </ButtonGroup>
-            </Grid>
+            {!exists && (
+              <Grid item>
+                <ButtonGroup
+                  variant="contained"
+                  aria-label="Basic button group"
+                >
+                  <Button onClick={buyNow}>Buy Now</Button>
+                  <Button onClick={addToCart}>Add to Cart</Button>
+                </ButtonGroup>
+              </Grid>
+            )}
           </Grid>
         </Grid>
       </Grid>

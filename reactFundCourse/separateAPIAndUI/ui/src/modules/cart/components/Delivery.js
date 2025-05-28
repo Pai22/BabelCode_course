@@ -1,4 +1,6 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import makeStyles from '@mui/styles/makeStyles'
 import { createTheme, ThemeProvider } from '@mui/material'
 import { useForm } from 'react-hook-form'
@@ -13,6 +15,8 @@ import {
   Button,
   Stack
 } from '@mui/material'
+
+import * as cartActions from '../action'
 
 const theme = createTheme()
 
@@ -35,6 +39,8 @@ const schema = yup.object().shape({
 
 export default function Delivery() {
   const classes = useStyles()
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   const {
     register,
@@ -45,7 +51,9 @@ export default function Delivery() {
   })
 
   const submit = (deliveryInfo) => {
-    console.log(deliveryInfo)
+    const action = cartActions.checkout(deliveryInfo, navigate)
+
+    dispatch(action)
   }
 
   return (

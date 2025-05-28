@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import makeStyles from '@mui/styles/makeStyles'
 import { createTheme, ThemeProvider } from '@mui/material'
 import { Typography, Grid } from '@mui/material'
 
 import Order from './Order'
 import Delivery from './Delivery'
+import * as cartActions from '../action'
 
 const theme = createTheme()
 
@@ -17,6 +19,17 @@ const useStyles = makeStyles((theme) => ({
 
 function CartContent() {
   const classes = useStyles()
+  const productIds = useSelector((state) => state.cart.productIds) // Access cart state to trigger re-render
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    dispatch(cartActions.loadCart())
+  }, [dispatch])
+
+  if (productIds.length === 0) {
+    return <p className={classes.title}>No order found</p>
+  }
+
   return (
     <>
       <Typography variant="h4" component="h1" className={classes.title}>

@@ -1,4 +1,9 @@
-import { TOGGLE_DARK_MODE, SET_DARK_MODE } from './actions'
+import {
+  TOGGLE_DARK_MODE,
+  SET_DARK_MODE,
+  SET_FLASH_MESSAGE,
+  CLEAR_FLASH_MESSAGE
+} from './actions'
 
 const initialState = {
   darkMode: false, //ไม่ให้มีการใช้ darkMode ตั้งแต่ต้น
@@ -16,6 +21,16 @@ export default function (state = initialState, action) {
       return {
         ...state,
         darkMode: action.payload.darkMode //ตั้งค่า darkMode ตามที่ส่งมา
+      }
+    case SET_FLASH_MESSAGE:
+      return {
+        ...state,
+        flashMessage: action.payload.message //ตั้งค่า flashMessage ตามที่ส่งมา
+      }
+    case CLEAR_FLASH_MESSAGE:
+      return {
+        ...state,
+        flashMessage: null //ล้างค่า flashMessage
       }
     default:
       return state
