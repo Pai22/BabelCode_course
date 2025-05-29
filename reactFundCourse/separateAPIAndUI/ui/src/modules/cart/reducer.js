@@ -6,7 +6,7 @@ const initialState = {
   productIds: []
 }
 
-export default function (state = initialState, action) {
+export default function cartReducer(state = initialState, action) {
   switch (action.type) {
     case ADD_TO_CART: {
       const { productId } = action.payload

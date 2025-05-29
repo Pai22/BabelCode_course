@@ -13,7 +13,7 @@ const initialState = {
   items: []
 }
 
-export default function (state = initialState, action) {
+export default function productsReducer(state = initialState, action) {
   switch (action.type) {
     case LOAD_PRODUCTS_REQUEST:
     case LOAD_PRODUCT_REQUEST:

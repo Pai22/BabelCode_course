@@ -10,7 +10,7 @@ const initialState = {
   flashMessage: null //ไม่ให้มีการใช้ flashMessage ตั้งแต่ต้น
 }
 
-export default function (state = initialState, action) {
+export default function uiReducer(state = initialState, action) {
   switch (action.type) {
     case TOGGLE_DARK_MODE:
       return {
