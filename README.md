@@ -46,7 +46,7 @@
 | 📚 Course              | 🔍 Status         | 📈 Progress | 🗓️ Latest update   |
 |------------------------|------------------|----------------|---------------------|
 | React Fundamentals     |   ✅ Completed      | 100%| 28 พ.ค. 2568        |
-| Next.js / TypeScript    | 🟡 Currently Learning      | 0%            | -      |
+| Next.js / TypeScript    | 🟡 Currently Learning      | 25%            | 30 พ.ค 25868     |
 | Go REST API   | ⬜ Not Started    | 0%             | -                   |
 | DevOps Fundamentals           | ⬜ Not Started     | 0%             | -                   |
  
