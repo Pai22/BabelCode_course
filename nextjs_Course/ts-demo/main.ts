@@ -1,63 +1,34 @@
-// interface Animal {
-//     age: number;
-// }
+type ButtonProps = {
+    color: string,
+    text: string | {toString: () => string}
+} & ( // เชื่อมด้วยและ แล้วเลือกอย่างใดอย่างนึ่ง
+    | { variant: "outline"; borderWidth?: number}
+    | { variant: "contain"; opacity?: number}
+    | { variant?: never} // ไม่ต้องส่ง variant เข้ามาก็ได้และไม่สามารถระบุค่าอื่นเข้ามาได้
+)
 
-// interface Person extends Animal{
-//     name: string;
-//     gender: 'male' | 'female';
-//     socials?: { // ใส่ ? คือสิ่งนั้นเป็น obtional สิ่งนั้นมีหรือไม่มีก็ได้
-//         line?: string;
-//         facebook?: string 
-//     }
-// }
 
-type Animal ={
-    age: number;
-}
 
-type Address = {
-    lat: number;
-    lng: number
-}
 
-type Person = Animal &{
-    name: string;
-    gender: 'male' | 'female';
-    addresses: Address[]; //เป็น array มีหลาย address or `{lat: number; lng: number }[];` ใส่แบบนี้เลยก็ได้
-    socials?: { // ใส่ ? คือสิ่งนั้นเป็น obtional สิ่งนั้นมีหรือไม่มีก็ได้
-        line?: string;
-        facebook?: string 
-}
-}
+function buildButton(props?: ButtonProps) {
+    // build button
+  }
 
-const somphong: Person = {
-    name: 'Somphong',
-    age: 22,
-    gender: 'male',
-    addresses: [{lat: 111, lng: 323}],
-    socials: {
-        line: "shomphong!! "
-    }
-}
-
-interface Options {
-    x: number;
-    y: number;
-}
-
-function foo(bar: number, options?: Options){
-
-}
-foo(1, { x:1,y: 2})
-
-function findById<T extends { id: number}>(items: T[], id: T['id']){
-    return items.find((item) => item.id === id)
-}
-
-const products = [
-    {id: 1 , title: "title#1"},
-    {id: 2 , title: "title#2"},
-    {id: 3 , title: "title#3"},
-]
-
-findById(products, 2) //    {id: 2 , title: "title#2"}
+  buildButton();
+buildButton({ variant: 'contain', color: '#4466ee', text: 'hello' });
+buildButton({ variant: 'contain', color: '#4466ee', opacity: 0.6, text: 20 });
+buildButton({ variant: 'outline', color: '#4466ee', text: 'hi' });
+buildButton({
+  variant: 'outline',
+  color: '#4466ee',
+  borderWidth: 2,
+  text: 'lorem',
+});
+const person = {
+  firstName: 'Somchai',
+  lastName: 'Somset',
+  toString() {
+    return `${this.firstName} ${this.lastName}`;
+  },
+};
+buildButton({ color: '#55ee11', text: person });

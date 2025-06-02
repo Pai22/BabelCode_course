@@ -140,4 +140,129 @@ findById(products, 2) //    {id: 2 , title: "title#2"}
 
 ## 📍 Utility type
 utility type คือตัวชนิดข้อมูลที่ตัวระบบ typescript เตรียมไว้ให้กับเรา เราสามารถนำมาแก้ปัญหาต่างๆได้อย่างมากมายโดยไม่ต้องเขียนเงื่อนไขให้ซับซ้อน
+Object คือ Record 
+### ตัวอย่างการใช้ Record
+```ts
+type Address = {
+    lat: number;
+    lng: number
+} 
+```
+or
+```ts
+type Address = Record<'lat' | 'lng',number> 
 
+```
+ทั้งสองได้ผลลัพธ์เหมือนกัน
+>address เป็น Object ที่มี key lat,  lng และทั้งสองตัวนั้นมีข้อมูลคือ number
+
+### ตัวอย่างการใช้ Partial
+ถ้าครอบทับด้วย partial มันจะทำให้ทั้งสองตัว auto เติม "?" เอง
+```ts
+type Animal ={
+    age: number;
+}
+type Person = Animal &{
+    name: string;
+    gender: 'male' | 'female';
+    addresses: Record<'lat' | 'lng',number>[]; //เป็น array มีหลาย address or `{lat: number; lng: number }[];` ใส่แบบนี้เลยก็ได้
+    socials?: Partial<{ 
+        line: string;
+        facebook: string 
+}>
+}
+```
+### ตัวอย่างการใช้ Pick กับ Omit
+- pick คือการเลือก
+- omit คือการละเว้น
+อยากได้ข้อมูลคือ name and gender เท่านั้น เราจะเรียก name กับ gender ว่าเป็น basi info โดยใช้ `Pick` และถ้าอยากได้ตัวอื่นๆที่ไม่ใช่ name กับ gender ก็จะใช้ `Omit`
+```ts
+type Animal ={
+    age: number;
+}
+type Person = Animal &{
+    name: string;
+    gender: 'male' | 'female';
+    addresses: Record<'lat' | 'lng',number>[]; //เป็น array มีหลาย address or `{lat: number; lng: number }[];` ใส่แบบนี้เลยก็ได้
+    socials?: Partial<{ //ถ้าครอบทับด้วย partial มันจะทำให้ทั้งสองตัว auto เติม "?" เอง
+        line: string;
+        facebook: string 
+}>
+}
+
+type BacisInfo = Pick<Person, "name" |"gender">
+type OtherInfo = Omit<Person, "name" | "gender">
+```
+> BacisInfo คือเลือกเอาแค่ name กับ gender
+> OtherInfo คือเอาทุกตัวยกเว้น name กับ gender
+
+---
+
+ถ้าอยากรู้ว่าชนิดข้อมูลของ getTheme ที่คืนออกมานั้นคืออะไร
+
+### ตัวอย่าง1 การแปลง type js --> ts
+ใช้ ReturnType 
+```js
+function getTheme() {
+    return {
+        colors: {
+            primary: '#eeffee',
+            secondary: 'ffeeee'
+        }
+    }
+}
+
+type GetThemeReturn = ReturnType<typeof getTheme>
+//อยากได้เฉพาะชนิดข้อมูลของ color
+type Colors = GetThemeReturn['colors']//เป็นการเข้าถึง colors
+//อยากได้ชื่อ key ใช้ keyof
+type ColorKeys = keyof Colors
+```
+
+### ตัวอย่าง2 การแปลง type js --> ts
+ถ้าอยากรู้ว่าพารามิเตอร์ที่เรารับเข้ามามีชนิดข้อมูลเป็นอะไร
+
+```ts
+function hello(a: number, b: string, c: boolean) {
+    console.log(a, b, c)
+}
+
+type HelloParams = Parameters<typeof hello>
+```
+---
+## 📍TypeScript Exercise
+จงสร้างชนิดข้อมูลในภาษา TypeScript ชื่อ ButtonProps เพื่อไว้ใช้กับพารามิเตอร์ของฟังก์ชัน buildButton ฟังก์ชันนี้จะรับพารามิเตอร์ดังกล่าวไปประกอบการตัดสินใจสร้าง Button ตามสิ่งที่ส่งเข้ามาเป็นพารามิเตอร์
+
+```ts
+type ButtonProps = {
+    color: string,
+    text: string | {toString: () => string}
+} & ( // เชื่อมด้วยและ แล้วเลือกอย่างใดอย่างนึ่ง
+    | { variant: "outline"; borderWidth?: number}
+    | { variant: "contain"; opacity?: number}
+    | { variant?: never} // ไม่ต้องส่ง variant เข้ามาก็ได้และไม่สามารถระบุค่าอื่นเข้ามาได้
+)
+
+function buildButton(props?: ButtonProps) {
+    // build button
+  }
+
+  buildButton();
+buildButton({ variant: 'contain', color: '#4466ee', text: 'hello' });
+buildButton({ variant: 'contain', color: '#4466ee', opacity: 0.6, text: 20 });
+buildButton({ variant: 'outline', color: '#4466ee', text: 'hi' });
+buildButton({
+  variant: 'outline',
+  color: '#4466ee',
+  borderWidth: 2,
+  text: 'lorem',
+});
+const person = {
+  firstName: 'Somchai',
+  lastName: 'Somset',
+  toString() {
+    return `${this.firstName} ${this.lastName}`;
+  },
+};
+buildButton({ color: '#55ee11', text: person });
+```

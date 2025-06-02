@@ -1,0 +1,35 @@
+{
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
+  "eslint.validate": [
+    "javascript",
+    "typescript",
+    "javascriptreact",
+    "typescriptreact"
+  ],
+  "typescript.validate.enable": true,
+
+  // "[javascript]": {
+  //   "editor.formatOnSave": false
+  // },
+  // "[typescript]": {
+  //   "editor.formatOnSave": false
+  // },
+  // "[javascriptreact]": {
+  //   "editor.formatOnSave": false
+  // },
+  // "[typescriptreact]": {
+  //   "editor.formatOnSave": false
+  // },
+
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "files.eol": "\n",
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.tsdk": "node_modules/typescript/lib"
+}
