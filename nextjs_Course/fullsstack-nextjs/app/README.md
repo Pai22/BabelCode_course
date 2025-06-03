@@ -421,7 +421,7 @@ page.tsx:12 hello 3
 
 ---
 
-## 📍Custom Hooks
+## 📍Custom Hooks & mock API
 
 ### 👀ทำการ mock API
 
@@ -454,7 +454,7 @@ pnpm add -D json-server
 4. รัน
 
 ```bash
-pnpm api:dev
+pnpm run api:dev
 ```
 
 ### ทำการดึง API มาแสดงบนหน้าจอ ทำฝั่ง server
@@ -624,3 +624,347 @@ export default ArticlePage;
 ---
 
 ## 📍Static and Dynamic Rendering
+
+1. สร้างโฟเดอร์ announcements, articles และ leaves
+2. mock api เพิ่มในไฟล์ db.json
+
+```json
+{
+  "articles": [
+    { "id": 1, "title": "Title#1" },
+    { "id": 2, "title": "Title#2" },
+    { "id": 3, "title": "Title#3" }
+  ],
+  "announcements": [
+    { "id": 1, "title": "Title#1" },
+    { "id": 2, "title": "Title#2" },
+    { "id": 3, "title": "Title#3" }
+  ],
+  "leaves": [
+    { "id": 1, "reason": "Reason#1" },
+    { "id": 2, "reason": "Reason#2" },
+    { "id": 3, "reason": "Reason#3" }
+  ]
+}
+```
+
+3. แบ่งการแสดงผลแต่ละหน้า
+
+- announcements
+  ทำเป็น SSR (server-side-rendering)
+- articles
+  ทำเป้ฯ SSG (static-side-generation)
+- leaves CSR (client-side-rendering)
+
+4. แยกโฟเดอร์ features
+   root/features/announcements/components
+   root/features/articles/components
+   root/features/leaves/components
+
+### Announcements (SSR)
+
+ทำ api โดยเขียน finAll สามารถทำได้ 2 วิธี
+
+1. ใช้ fetch API เพื่อไปดึงข้อมูลจากตัว API ของเรา
+2. บนตัวของ next เองมีฐานข้อมูลที่เชื่อมต่อได้โดยตรง
+   ดังนั้นเราอาจจะเลือกเชื่อมต่อกับฐานข้อมูลโดยตรง จึงต้องทำการจำลองข้อมูลก่อนโดยใช้ faker
+
+#### จำลองข้อมูลโดยใช้ faker
+
+จำลองเหมือนกับเราเชื่อมกับฐานข้อมูลโดยตรง ไม่ผ่าน API
+
+ติดตั้ง package
+
+```bash
+   pnpm add -D @faker-js/faker
+```
+
+File: /features/announcements/api.ts จำลอง api
+
+```ts
+import { faker } from '@faker-js/faker';
+
+export const findAll = () => {
+  const length = faker.helpers.rangeToNumber({ min: 3, max: 10 }); // จำลองความยาวของ announcements
+  const announcements = Array.from({ length }).map(() => ({
+    id: faker.number.int(), // จำนวนเต็ม
+    title: faker.lorem.sentence(), // gxHoxitFp8
+  }));
+
+  return Promise.resolve(announcements); // ต้องใส่ Promise เพราะตัว nodejs retun เป็น Promise มันจะคืนค่า announcements โดยตรงเมื่อมัน await เสร็จเรียบร้อยแล้ว
+  //การเชื่อมต่อกับฐานข้อมูลที่มีแนวโน้มจะใช้เวลานานๆมันจะคืนค่าเป็น promise
+};
+```
+
+ประกาศชนิดข้อมูล
+
+1. ประกาศตรงๆ
+2. ทำให้ sync กับข้อมูลของ api
+
+File: /features/announcements/components/AnnouncementList.tsx
+
+```tsx
+import { type findAll } from '@/features/announcements/api';
+
+interface AnnouncementListProps {
+  announcements: Awaited<ReturnType<typeof findAll>>;
+  // RetrunType คือ เข้าถึงสิ่งที่คืนออกมาจากฟังก์ชันก่อน
+  //ของที่มันคืนออกมาติด promise จึงต้องใส่ await เพื่อให้เอาแต่ใส่ใน
+  //จะได้ announcements ที่ sync กับ api แล้ว
+}
+
+const AnnouncementList = ({ announcements }: AnnouncementListProps) => {
+  return (
+    <ul>
+      {announcements.map((announcement) => (
+        <li key={announcement.id}>{announcement.title}</li>
+      ))}
+    </ul>
+  );
+};
+export default AnnouncementList;
+```
+
+File: /app/announcements/page.tsx
+
+```tsx
+// ไฟล์นี้ทำเป็น ssr คือ server component จึงสามารถใช้ async กับ component ได้
+
+import { findAll } from '@/features/announcements/api';
+import AnnouncementList from '@/features/announcements/components/AnnouncementList';
+
+const AnnouncementsPage = async () => {
+  const announcements = await findAll();
+  return <AnnouncementList announcements={announcements} />;
+};
+export default AnnouncementsPage;
+```
+
+สรุป การเขียนโค้ดโดยการดึงข้อมูลผ่านตัว server component มันจะทำเป็น static side generation แม้ตอนที่เป็น dev เราจะเห็นมันรัน function นี้ใหม่ทุกครั้งแต่ตอนกระบวนการของการ build แล้วมันจะ build ออกมาเป็นไฟล์ของ html ตัวเดียวแล้วเซิร์ฟคือคืนไฟล์ตัวเนี้ยออกไปทุกครั้งของการเรียก (มันเป็น static ) ปกติทุกครั้งที่ request เข้ามามันควรจะได้ข้อมูลใหม่ทางฝั่ง server เสอมไม่ใช่เก็บเป็น static
+
+### 🥊แก้ไขโค้ดให้เป็น server side rendering แบบ dynamic
+
+คือทำทุกครั้งที่มี request มาจะต้องรันมันใหม่ทุกครั้งทางฝั่ง server เพื่อ build html ก่อนจะส่งกลับมาที่ client โดยทำให้มันเป็น `Dynamic`
+
+```tsx
+// ไฟล์นี้ทำเป็น ssr คือ server component จึงสามารถใช้ async กับ component ได้
+
+import { findAll } from '@/features/announcements/api';
+import AnnouncementList from '@/features/announcements/components/AnnouncementList';
+
+const AnnouncementsPage = async () => {
+  const announcements = await findAll();
+  return <AnnouncementList announcements={announcements} />;
+};
+export default AnnouncementsPage;
+
+export const dynamic = 'force-dynamic'; // ฝั่ง build จะเป็น ssr แบบ dynamic
+```
+
+### Articles
+
+ทำคล้ายๆ announcement แต่ไม่ทำเป็น dynamic ทำเป็น isr แทน
+
+File: /features/articles/components/articleList.tsx
+
+```tsx
+import { type findAll } from '@/features/articles/api';
+
+interface ArticleListProps {
+  articles: Awaited<ReturnType<typeof findAll>>;
+}
+
+const ArticleList = ({ articles }: ArticleListProps) => {
+  return (
+    <ul>
+      {articles.map((articles) => (
+        <li key={articles.id}>{articles.title}</li>
+      ))}
+    </ul>
+  );
+};
+export default ArticleList;
+```
+
+File: /features/articles/api.ts จำลอง api
+
+```tsx
+import { faker } from '@faker-js/faker';
+
+export const findAll = () => {
+  const length = faker.helpers.rangeToNumber({ min: 3, max: 10 });
+  const articles = Array.from({ length }).map(() => ({
+    id: faker.number.int(),
+    title: faker.lorem.sentence(),
+  }));
+
+  return Promise.resolve(articles);
+};
+```
+
+File: /app/articles/page.tsx
+
+```tsx
+// ไฟล์นี้ทำเป็น ssg คือ generate html ให้เรียบร้อยตั้งแต่ build
+// ssg --> isr
+import { findAll } from '@/features/articles/api';
+import ArticleList from '@/features/articles/components/ArticleList';
+
+const ArticlesPage = async () => {
+  const articles = await findAll();
+
+  return <ArticleList articles={articles} />;
+};
+
+export default ArticlesPage;
+
+export const revalidate = 15; // isr
+// generate ใหม่ทุกๆ 15 วินาที ในการคืนผลลัพธ์นั้นเมื่อครบ 15 วินาทีแล้ว
+// คนแรกที่ requset หลังจาก 15 วิจะยังคงได้ข้อมูลชุดเก่าอยู่พร้อมกับ build ใหม่
+// คนที่สอง request มาจะได้ข้อมูลชุดใหม่
+```
+
+generate ใหม่ทุกๆ 15 วินาที ในการคืนผลลัพธ์ เมื่อครบ 15 วินาทีแล้ว คนแรกที่ requset หลังจาก 15 วิจะยังคงได้ข้อมูลชุดเก่าอยู่พร้อมกับ build ใหม่ คนที่สอง request มาจะได้ข้อมูลชุดใหม่
+
+---
+
+## 📍Fetch-based Rendering
+
+ใช้ fetch api ในการดึงข้อมูล
+
+### Announcements
+
+1. ทำการสร้าง pass /app/announcements/[id]/page.tsx
+
+```tsx
+import { findById } from '@/features/announcements/api';
+import AnnouncementDetails from '@/features/announcements/components/AnnouncementDetail';
+
+interface AnnouncementPageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+const AnnouncementPage = async ({ params }: AnnouncementPageProps) => {
+  const { id } = await params;
+  const announcement = await findById(+id); // ใส่ + เพราะทำให้ string --> number
+  return <AnnouncementDetails announcement={announcement} />;
+};
+export default AnnouncementPage;
+//อะไรที่ส่งผ่านจาก url จะเป็น string เสมอ
+```
+
+2. เพิ่ม function findById ในไฟล์ /features/announcements/api.ts
+
+```tsx
+export const findById = async (id: Announcement['id']) => {
+  const res = await fetch(`http://localhost:5151/announcements/${id}`, {
+    cache: 'no-store', // 'no-store' is ไม่ต้องจดจำค่าไว้ใน cache
+  });
+  // ใส่ cache ทำให้เกิดการทำงานแบบ ssr
+  return res.json() as Promise<Announcement>;
+};
+```
+
+3. สร้างไฟล์ /features/announcements/components/AnnoucementDetail.tsx
+
+```tsx
+import { type Announcement } from '@/features/announcements/types';
+
+interface AnnouncementDetailsProps {
+  announcement: Announcement;
+}
+const AnnouncementDetails = ({ announcement }: AnnouncementDetailsProps) => {
+  return <div>{announcement.title}</div>;
+};
+export default AnnouncementDetails;
+```
+
+### Articles
+
+ทำคล้ายๆ Announcements แต่ทำเป็น ssg --> revalidate(isr)
+
+1. ทำการสร้าง pass /app/articles/[id]/page.tsx
+
+```tsx
+import { findById } from '@/features/articles/api';
+import ArticleDetail from '@/features/articles/components/ArticleDetail';
+
+interface ArticlePageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+// ตอนมัน build ต้องให้มันเตรียมผลลัพธ์ของ article ที่มี id เป็น 1 หรือ id ที่ต้องการจะเตรียม
+export const generateStaticParams = () => {
+  return [{ id: '1' }, { id: '2' }];
+};
+
+const ArticlePage = async ({ params }: ArticlePageProps) => {
+  const { id } = await params;
+  const article = await findById(+id);
+
+  return <ArticleDetail article={article} />;
+};
+export default ArticlePage;
+```
+
+2. เพิ่ม function findById ในไฟล์ /features/articles/api.ts
+
+```tsx
+export const findById = async (id: Article['id']) => {
+  const res = await fetch(`http://localhost:5151/announcements/${id}`, {
+    next: { revalidate: 15 }, // ทำ ssg + validate = isr
+  });
+
+  return res.json() as Promise<Article>;
+};
+```
+
+3. สร้างไฟล์ /features/articles/components/ArticleDetail.tsx
+
+```tsx
+import { type Article } from '@/features/articles/types';
+
+interface ArticleDetailProps {
+  article: Article;
+}
+const ArticleDetail = ({ article }: ArticleDetailProps) => {
+  return <div>{article.title}</div>;
+};
+export default ArticleDetail;
+```
+
+---
+
+## 📍nextjs api
+
+สร้างโฟเดอร์และไฟล์ /app/articles/route.ts
+
+1. วิธีแรกในการส่ง response
+
+```ts
+export const GET = () => {
+  const articles = [{ id: 1 }, { id: 2 }];
+  return Response.json(articles);
+};
+```
+
+2. วิธีที่สองในการส่ง response
+   - การ new response จะทำให้เราสามารถ ส่งข้อมูลกลับไปได้พร้อมกับสามารถเขียน response status ที่เป็น http status กลับไปได้
+   - สามารถดีไซน์ตามหลักของ RESTFUL API ได้เลย
+
+```ts
+export const GET = () => {
+  const articles = [{ id: 1 }, { id: 2 }];
+  return new Response(JSON.stringify(articles), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+```
+
+### 👀recap RESTFUL API
+
+มีข้อมูลอยู่ทางฝั่งของ server คือ api ของเราแล้วเราเอาข้อมู transfer มาสู่ฝั่งของ client
