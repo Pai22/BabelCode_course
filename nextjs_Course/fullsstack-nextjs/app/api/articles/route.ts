@@ -1,9 +1,8 @@
-export const GET = () => {
-  const articles = [{ id: 1 }, { id: 2 }];
-  return new Response(JSON.stringify(articles), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
+import { findAll } from '@/features/articles/api';
+
+export const GET = async () => {
+  const articles = await findAll();
+  return Response.json(articles);
 };
 // การ new response จะทำให้เราสามารถ ส่งข้อมูลกลับไปได้พร้อมกับสามารถเขียน
 // response status ที่เป็น http status กลับไปได้

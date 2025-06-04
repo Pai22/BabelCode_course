@@ -15,6 +15,8 @@ const ArticlePage = async ({ params }: ArticlePageProps) => {
   const { id } = await params;
   const article = await findById(+id);
 
+  if (!article) return <div>No article found</div>;
+
   return <ArticleDetail article={article} />;
 };
 export default ArticlePage;
