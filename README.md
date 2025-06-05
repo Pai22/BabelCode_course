@@ -46,7 +46,7 @@
 | 📚 Course              | 🔍 Status         | 📈 Progress | 🗓️ Latest update   |
 |------------------------|------------------|----------------|---------------------|
 | React Fundamentals     |   ✅ Completed      | 100%| 28 พ.ค. 2568        |
-| Next.js / TypeScript    | 🟡 Currently Learning (20/39)     | 50%      | 4 มิ.ย. 2568     |
+| Next.js / TypeScript    | 🟡 Currently Learning (22/39)     | 56%      | 5 มิ.ย. 2568     |
 | Go REST API   | ⬜ Not Started    | 0%             | -                   |
 | DevOps Fundamentals           | ⬜ Not Started     | 0%             | -                   |
  
@@ -58,3 +58,4 @@
 ✅ เสร็จสิ้น 
 > "Learning is a journey, not a race. Enjoy every step you take." 🚶‍♀️ -->
 <!-- NextJS learning update(Next 17) -->
+<!-- NestJS learing update(Studying 20) -->

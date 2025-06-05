@@ -1,0 +1,10 @@
+version: '3.9'
+services:
+  db:
+    image: 'postgres:15.3-alpine3.18'
+    ports:
+      - '9111:5432'
+      # localhost:9111
+    environment:
+      POSTGRES_USER: myapp
+      POSTGRES_PASSWORD: mypassword

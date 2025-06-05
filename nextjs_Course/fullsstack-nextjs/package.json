@@ -10,6 +10,7 @@
     "api:dev": "json-server --watch db.json --port 5151"
   },
   "dependencies": {
+    "@prisma/client": "6.9.0",
     "next": "15.3.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -31,6 +32,7 @@
     "json-server": "1.0.0-beta.3",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.12",
+    "prisma": "^6.9.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

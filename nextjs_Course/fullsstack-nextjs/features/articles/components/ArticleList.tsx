@@ -1,4 +1,5 @@
 import { type findAll } from '@/features/articles/api';
+import Link from 'next/link';
 
 interface ArticleListProps {
   articles: Awaited<ReturnType<typeof findAll>>;
@@ -9,11 +10,15 @@ interface ArticleListProps {
 
 const ArticleList = ({ articles }: ArticleListProps) => {
   return (
-    <ul>
-      {articles.map((articles) => (
-        <li key={articles.id}>{articles.title}</li>
-      ))}
-    </ul>
+    <>
+      <ul>
+        {articles.map((articles) => (
+          <li key={articles.id}>
+            <Link href={`/articles/${articles.id}`}>{articles.title}</Link>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 };
 export default ArticleList;

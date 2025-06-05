@@ -1023,3 +1023,414 @@ z.object({
 ```
 
 zod จะมีอีกสิ่งนึงที่เรียกว่า inference คือดูว่ากฎของการ validate เป็นอย่างไรมันจะทำการ generate ชนิดข้อมูลของ type script ออกมาให้อัตโนมัติ
+
+---
+
+## 21. Client-Side Rendering (leaves)
+
+ไปถึง client ก่อนแล้วค่อยทำการดึงข้อมูล
+// ssg --> CSR
+
+---
+
+## 22. Next Navigation
+
+Next Navigation เป็น package ที่รวบรวม Hooks หลายๆตัวเข้าด้วยกัน สามารถใช้กับ client component
+
+### การเปลี่ยนหน้าจอ
+
+- เมื่อเข้ามาอยู่หน้า Home("/") แล้วต้องการให้มัน redirect เพื่อเปลี่ยนเส้นทางไปที่อื่น มีวิธีการ config ดังนี้
+- ไปยังไฟล์ `next.config.mjs`
+
+### ตัวอย่างการ config
+
+```mjs
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  eslint: {
+    dirs: ['.'],
+  },
+  redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/leaves',
+        permanent: true,
+      },
+    ];
+  },
+};
+
+export default nextConfig;
+```
+
+> ถ้าเป็น true permanent เป็น path ถาวร แปลว่าวิ่งมาที่ ("/") เมื่อไหร่ปุปมันจะวิ่งไปที่ ("/leaves") ทันทีแบบถาวร
+> ถ้าเป็น false แปลว่า temporary แปลว่าเปลี่ยน path แค่ชั่วคราว
+
+### Next Navigation: useRouter
+
+- ทำให้เราสามารถเปลี่ยน path บนหน้าจอได้ คล้ายๆกับการใช้ Link component แต่ต่างกันตรงที่ Link component สามารถใช้ได้ทั้ง client และ server component
+
+มี stack ดังต่อไปนี้
+
+1. push: `router.push('/article/1')` จากเดิมอยู่ที่ตำแหน่ง `/articles` เมื่อมีการคลิกมันจะ push `/article/1` เพิ่มเข้าไปแล้วพอกดย้อนกลับก็จะกลับไปหน้าเดิมได้ `/articles`
+
+2. replace: `router.replace('/leaves')` จากที่ push แล้วอยู่ที่ตำแหน่ง `/articles/1` เมื่อมีการคลิกมันจะถูกแทนที่ด้วย `/leaves` ทันทีแล้วกดย้อนกลับจะไป `/articles` เลย จะไม่กลับไป `/articles/1` เพราะถูกแทนที่ด้วย `/leaves` ไปแล้ว ใช้ในกรณีหน้า login
+
+3. back: `router.back()` คือการย้อนกลับจากที่ replace ไป `/leaves` แล้วกด back มันจะกลับไปหน้า `/articles`
+
+📚 ตัวอย่างโค้ด
+
+```tsx
+'use client';
+
+import { type findAll } from '@/features/articles/api';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+interface ArticleListProps {
+  articles: Awaited<ReturnType<typeof findAll>>;
+  // RetrunType คือ เข้าถึงสิ่งที่คืนออกมาจากฟังก์ชันก่อน
+  //ของที่มันคืนออกมาติด promise จึงต้องใส่ await เพื่อให้เอาแต่ใส่ใน
+  //จะได้ articles ที่ sync กับ api แล้ว
+}
+
+const ArticleList = ({ articles }: ArticleListProps) => {
+  const router = useRouter();
+
+  return (
+    <>
+      <ul>
+        {articles.map((articles) => (
+          <li key={articles.id}>
+            <Link href={`/articles/${articles.id}`}>{articles.title}</Link>
+          </li>
+        ))}
+      </ul>
+      <button
+        onClick={() => router.push('/leaves')}
+        className="bg-green-700 text-white"
+      >
+        Navigate to /leaves
+      </button>
+      <button
+        onClick={() => router.replace('/leaves')}
+        className="bg-red-700 text-white"
+      >
+        Navigate to /leaves
+      </button>
+      <button
+        onClick={() => router.back()}
+        className="bg-yellow-300 text-white"
+      >
+        Navigate to /leaves
+      </button>
+    </>
+  );
+};
+export default ArticleList;
+```
+
+### Next Navigation: usePathname
+
+สามารถดึงค่าของตัว path name ออกจาก url ได้
+ตัวอย่าง
+`https://babelcoder.com/articles/fullstack-nextjs` --> `/articles/fullstack-nextjs`
+
+📚 ตัวอย่างโค้ด
+
+```tsx
+'use client';
+
+import { type findAll } from '@/features/articles/api';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+interface ArticleListProps {
+  articles: Awaited<ReturnType<typeof findAll>>;
+}
+
+const ArticleList = ({ articles }: ArticleListProps) => {
+  const pathname = usePathname();
+  console.log('pathname', pathname);
+
+  return (
+    <>
+      <ul>
+        {articles.map((articles) => (
+          <li key={articles.id}>
+            <Link href={`/articles/${articles.id}`}>{articles.title}</Link>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+export default ArticleList;
+```
+
+### Next Navigation: useSearchParams
+
+สามารถดึงค่าของ query string ที่อยู่ภายใต้ url ของเราออกมาได้
+ตัวอย่าง
+`https://babelcoder.com/articles?category=programming` -->get('category') `programming`
+
+📚 ตัวอย่างโค้ด
+
+```tsx
+'use client';
+
+import { type findAll } from '@/features/articles/api';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+
+interface ArticleListProps {
+  articles: Awaited<ReturnType<typeof findAll>>;
+}
+
+const ArticleList = ({ articles }: ArticleListProps) => {
+  const search = useSearchParams();
+  console.log('searchparams = ', search.get('category'));
+  //URL: http://localhost:3000/articles?category=food
+  //AWS: searchparams = food
+
+  return (
+    <>
+      <ul>
+        {articles.map((articles) => (
+          <li key={articles.id}>
+            <Link href={`/articles/${articles.id}`}>{articles.title}</Link>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+export default ArticleList;
+```
+
+### Next Navigation: useParams
+
+/app/articles/[id] อยากทราบว่า id ของ url นี้คืออะไรสามารถใช้ useParams ได้
+ตัวอย่าง
+`https://babelcoder.com/articles/123` --> `123`
+
+📚 ตัวอย่างโค้ด
+
+```tsx
+'use client';
+
+import { type Article } from '@/features/articles/types';
+
+import { useParams } from 'next/navigation';
+
+interface ArticleDetailProps {
+  article: Article;
+  onUpdate: (id: Article['id']) => void;
+}
+
+const ArticleDetail = ({ article, onUpdate }: ArticleDetailProps) => {
+  const { id } = useParams<{ id: string }>();
+  console.log(id);
+
+  return (
+    <div>
+      {article.title}
+      <button
+        onClick={() => onUpdate(article.id)}
+        className="bg-amber-800 text-white"
+      >
+        Update
+      </button>
+    </div>
+  );
+};
+export default ArticleDetail;
+```
+
+---
+
+## 📍23. Prisma ORM
+
+- Prisma เป็นเครื่องมือประเภท ORM (Object-Relational Mapping) ที่ช่วยให้เราสามารถออกแบบ Model สร้าง Schema และทำ Database Migration ได้อย่างง่ายได้ เพื่อให้เราสามารถใช้งาน Prisma ได้ ให้ทำการติดตั้ง Prisma ก่อนผ่านคำสั่งคือ
+- ORM (object relational mapping) เป็นกลุ่มเครื่องมือที่จะออกแบบตัวโมเดลของเราได้ โดยโมเดลนี้จะเป็นตัวแทนของข้อมูลซึ่งมาจาก Table ในฐานข้อมูลของเราและเราสามารถเชื่อมต่อผ่าน orm เหล่านี้เพื่อเข้าถึงไปแก้ไข ไปสร้าง หรือว่าลบข้อมูลในฐานข้อมูลอีกทีนึง ORM ที่เป็นที่นิยมของ js คือ `Prisma`
+- การใช้งานตัว `Prisma` เราจะทำการนิยามสิ่งนึงที่เรียกว่าเป็นโมเดล โดยโมเดลจะเป็นตัวแทนของ Table เมื่อเราออกคำสั่ง `prisma generate` มันจะไปสร้างไฟล์สำหรับชนิดข้อมูล
+
+ติดตั้ง package Prisma
+
+```bash
+pnpm add -D prisma
+```
+
+Prisma นั้นจะมีไฟล์พิเศษชื่อ `prisma/schema.prisma `สำหรับนิยาม Model เพื่อเป็นตัวแทนของ ตารางต่าง ๆ ในฐานข้อมูล โดยการใช้งาน ORM นั้นต้องทำการระบุว่าจะเชื่อมต่อการทำงานบนฐานข้อมูลใด ในที่นี้เราจะใช้ PostgreSQL
+
+ทำการสร้างไฟล์ `prisma/schema.prisma` พร้อมระบุฐานข้อมูลเป็น postgresql ดังนี้โดยใช้คำสั่งนี้
+
+```bash
+pnpx prisma init --datasource-provider postgresql
+```
+
+จากคำสั่งดังกล่าวจะเกิดโฟลเดอร์ชื่อ `prisma` ที่ภายในมีไฟล์คือ `schema.prisma` อยู่ เราสามารถสร้าง Model และผูกความสัมพันธ์ระหว่าง Model ได้ในไฟล์นี้
+
+```.prisma
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+```
+
+ไฟล์ที่ถูกสร้างโดย Prisma นี้จะทำการเชื่อมต่อไปยังฐานข้อมูลโดยอาศัย DSN ผ่านค่า Environment Variable ในชื่อของ `DATABASE_URL`
+
+### เตรียมฐานข้อมูลด้วย Docker Compose
+
+เราจะทำการรัน PostgreSQL ผ่าน Docker Compose โดยให้ทำการสร้างไฟล์ `docker-compose.yml` ดังนี้
+
+```.yml
+version: '3.9'
+services:
+  db:
+    image: 'postgres:15.3-alpine3.18'
+    ports:
+      - '9111:5432'
+    environment:
+      POSTGRES_USER: myapp
+      POSTGRES_PASSWORD: mypassword
+```
+
+เราออกคำสั่งสำหรับการรันฐานข้อมูลดังกล่าวด้วยคำสั่ง bash นี้เท่านั้น
+
+```bash
+docker compose up
+```
+
+คำสั่งดังกล่าวจะเปิดการเชื่อมต่อไปยังฐานข้อมูลที่พอร์ต 9111 โดยมีชื่อและรหัสผ่านการเข้าใช้งานเป็น myapp และ mypassword ตามลำดับ ด้วยเหตุนี้เมื่อกำหนดชื่อฐานข้อมูลเป็น `fullstack-nextjs` ทำให้ DSN ของเราได้เป็น
+
+```.env
+DATABASE_URL="postgresql://myapp:mypassword@localhost:9111/fullstack-nextjs?schema=public"
+```
+
+นำค่านี้ไประบุในไฟล์ `.env` โดยใช้ชื่อตัวแปร `DATABASE_URL` ดังนี้
+
+### Schema
+
+กำหนดข้อมูล model ผ่านไฟล์ `prisma/schema.prisma` ดังนี้
+
+```.prisma
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  MEMBER
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id            Int            @id @default(autoincrement()) // เพิ่มค่าของ id เราให้อัตโนมัต
+  name          String
+  email         String         @unique // email ห้ามซ้ำกัน
+  image         String? //ใส่ optional"?" เพื่อบอกว่า field ตัวนี้ไม่ได้ require ไม่จำเป็นต้องใส่เข้ามาก็ได้
+  role          Role           @default(MANAGER)
+  createdAt     DateTime       @default(now()) // เวลาสร้าง record ปุ๊บ create เมื่อไหร่จะกำหนดให้เป็น Date Time ณ ตอนนั้นทันที
+  updateAt      DateTime       @default(now())
+  leaves        Leave[]
+  announcements Announcement[]
+  articles      Article[]
+  // สามตัวหลังที่เพิ่มเข้ามานั้นจะบ่งบอกว่า leaves, announcements และ articles สามารถเข้าถึง user ได้
+}
+
+model Leave {
+  id              Int         @id @default(autoincrement())
+  status          LeaveStatus @default(PENDING)
+  reason          String
+  leaveDate       String
+  rejectionReason String?
+  userId          Int //เป็น foran key ที่ชี้ไปหา user ในส่วนของ id
+  createdAt       DateTime    @default(now())
+  updateAt        DateTime    @default(now())
+  user            User        @relation(fields: [userId], references: [id])
+
+  // leave ของเราเข้าถึง user เวลาจะวิ่งต่อไปที่ user ให้ดูที่ field อะไร ในที่นี้คือ field: userId
+  // แล้วเวลาย้อนกลับมาหาตัว leave จะต้องใส ref id ของ leave ด้วย
+  // สร้างความสัมพันธ์กับ user เพื่อให้เข้าถึง user ได้
+  @@unique([userId, leaveDate]) // user คนเดียวกันจะไม่สามารถกำหนด leaveDate ซำ้กันได้ และต้องใส่ "@@" สองอันเพราะอยู่ข้องนอกไม่ได้ต่อหลังใคร
+}
+
+model Announcement {
+  id        Int      @id @default(autoincrement())
+  title     String
+  slug      String   @unique
+  excerpt   String
+  content   String
+  userId    Int
+  createdAt DateTime @default(now())
+  updateAt  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Article {
+  id        Int      @id @default(autoincrement())
+  title     String
+  slug      String   @unique
+  excerpt   String
+  content   String
+  image     String
+  userId    Int
+  createdAt DateTime @default(now())
+  updateAt  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+
+```
+
+### การทำ Prototype
+
+คือการขึ้นรูปของตัวโครงสร้าง table อย่างง่ายๆและเห็นผลลัพธ์ทันที โดยใช้คำสั่งนี้
+
+```bash
+pnpx prisma db push
+```
+
+เสร็จแล้วมันจะมีการสร้าง Generated Prisma Client เป็นตัวที่ทำให้เราสามารถเชื่อมต่อกับฐาข้อมูลของเราโดยตรงได้และมีการ generated ชนิดข้อมูลให้กับเราเรียบร้อย
+
+สามารถเปิดตัว client ขึ้นมาเพื่อดูว่าโครงสร้างของฐานข้อมูลเรามี table อะไรและมีข้อมูลอะไรอยู่บ้าง โดยใช้คำสั่ง
+
+```bash
+pnpx prisma studio
+```
+
+### ทำการจำลองข้อมูลโดยใช้ faker
+
+- จำลองฐานข้อมูล อะไรที่เกี่ยวข้องกับฐานข้อมูลหรือ network function นั้นจะต้องใส่ async/await
+- แล้วเมื่อเป็น async function ตัวมันเองจะคืน Promise
+
+```bash
+pnpm add -D @faker-js/faker
+```

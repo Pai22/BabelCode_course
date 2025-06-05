@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  MEMBER
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id            Int            @id @default(autoincrement()) // เพิ่มค่าของ id เราให้อัตโนมัต
+  name          String
+  email         String         @unique // email ห้ามซ้ำกัน
+  image         String? //ใส่ optional"?" เพื่อบอกว่า field ตัวนี้ไม่ได้ require ไม่จำเป็นต้องใส่เข้ามาก็ได้
+  role          Role           @default(MANAGER)
+  createdAt     DateTime       @default(now()) // เวลาสร้าง record ปุ๊บ create เมื่อไหร่จะกำหนดให้เป็น Date Time ณ ตอนนั้นทันที
+  updateAt      DateTime       @default(now())
+  leaves        Leave[]
+  announcements Announcement[]
+  articles      Article[]
+  // สามตัวหลังที่เพิ่มเข้ามานั้นจะบ่งบอกว่า leaves, announcements และ articles สามารถเข้าถึง user ได้
+}
+
+model Leave {
+  id              Int         @id @default(autoincrement())
+  status          LeaveStatus @default(PENDING)
+  reason          String
+  leaveDate       String
+  rejectionReason String?
+  userId          Int //เป็น foran key ที่ชี้ไปหา user ในส่วนของ id
+  createdAt       DateTime    @default(now())
+  updateAt        DateTime    @default(now())
+  user            User        @relation(fields: [userId], references: [id])
+
+  // leave ของเราเข้าถึง user เวลาจะวิ่งต่อไปที่ user ให้ดูที่ field อะไร ในที่นี้คือ field: userId
+  // แล้วเวลาย้อนกลับมาหาตัว leave จะต้องใส ref id ของ leave ด้วย
+  // สร้างความสัมพันธ์กับ user เพื่อให้เข้าถึง user ได้
+  @@unique([userId, leaveDate]) // user คนเดียวกันจะไม่สามารถกำหนด leaveDate ซำ้กันได้ และต้องใส่ "@@" สองอันเพราะอยู่ข้องนอกไม่ได้ต่อหลังใคร
+}
+
+model Announcement {
+  id        Int      @id @default(autoincrement())
+  title     String
+  slug      String   @unique
+  excerpt   String
+  content   String
+  userId    Int
+  createdAt DateTime @default(now())
+  updateAt  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Article {
+  id        Int      @id @default(autoincrement())
+  title     String
+  slug      String   @unique
+  excerpt   String
+  content   String
+  image     String
+  userId    Int
+  createdAt DateTime @default(now())
+  updateAt  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
