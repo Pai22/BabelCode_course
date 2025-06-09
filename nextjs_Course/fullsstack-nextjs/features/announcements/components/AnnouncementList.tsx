@@ -1,19 +1,22 @@
-import { type findAll } from '@/features/announcements/api';
+import type * as types from '@/features/announcements/types';
+import AnnouncementItem from '@/features/announcements/components/AnnouncementItem';
+import { Separator } from '@/components/ui/separator';
 
 interface AnnouncementListProps {
-  announcements: Awaited<ReturnType<typeof findAll>>;
-  // RetrunType คือ เข้าถึงสิ่งที่คืนออกมาจากฟังก์ชันก่อน
-  //ของที่มันคืนออกมาติด promise จึงต้องใส่ await เพื่อให้เอาแต่ใส่ใน
-  //จะได้ announcements ที่ sync กับ api แล้ว
+  announcements: types.AnnouncementItem[];
 }
 
 const AnnouncementList = ({ announcements }: AnnouncementListProps) => {
   return (
-    <ul>
-      {announcements.map((announcement) => (
-        <li key={announcement.id}>{announcement.title}</li>
-      ))}
-    </ul>
+    <section>
+      <h1 className="my-4 text-center text-4xl font-bold">All Announcements</h1>
+      <Separator className="my-4"></Separator>
+      <div className="mx-auto grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {announcements.map((announcement) => (
+          <AnnouncementItem key={announcement.id} {...announcement} />
+        ))}
+      </div>
+    </section>
   );
 };
 export default AnnouncementList;

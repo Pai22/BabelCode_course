@@ -1,23 +1,27 @@
-import { type Announcement } from '@/features/announcements/types';
-import { faker } from '@faker-js/faker';
+import db from '@/features/shared/db';
 
-export const findAll = () => {
-  const length = faker.helpers.rangeToNumber({ min: 3, max: 10 }); // จำลองความยาวของ announcements
-  const announcements = Array.from({ length }).map(() => ({
-    id: faker.number.int(), // จำนวนเต็ม
-    title: faker.lorem.sentence(), // gxHoxitFp8
-  }));
+export const findAll = async () => {
+  const announcements = await db.announcement.findMany({
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      excerpt: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
 
-  return Promise.resolve(announcements); // ต้องใส่ Promise เพราะตัว nodejs retun เป็น Promise มันจะคืนค่า announcements โดยตรงเมื่อมัน await เสร็จเรียบร้อยแล้ว
-  //การเชื่อมต่อกับฐานข้อมูลที่มีแนวโน้มจะใช้เวลานานๆมันจะคืนค่าเป็น promise
+  return announcements;
 };
 
-// fetch api ไปดึง api โดยตรง
-
-export const findById = async (id: Announcement['id']) => {
-  const res = await fetch(`http://localhost:5151/announcements/${id}`, {
-    cache: 'no-store', // 'no-store' is ไม่ต้องจดจำค่าไว้ใน cache ถ้าทำแบบ ssg ไม่ต้องใส่เลย
+export const findById = async (id: number) => {
+  const announcement = await db.announcement.findUnique({
+    where: { id },
   });
-  // ใส่ cache ทำให้เกิดการทำงานแบบ ssr
-  return res.json() as Promise<Announcement>;
+
+  if (!announcement) throw new Error('announcement not found'); // announcement มีบางค่าเป็น null เลยต้องเขียน
+
+  return announcement;
 };

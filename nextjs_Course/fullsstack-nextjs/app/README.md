@@ -1272,7 +1272,7 @@ pnpx prisma init --datasource-provider postgresql
 
 จากคำสั่งดังกล่าวจะเกิดโฟลเดอร์ชื่อ `prisma` ที่ภายในมีไฟล์คือ `schema.prisma` อยู่ เราสามารถสร้าง Model และผูกความสัมพันธ์ระหว่าง Model ได้ในไฟล์นี้
 
-```.prisma
+```prisma
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -1292,7 +1292,7 @@ datasource db {
 
 เราจะทำการรัน PostgreSQL ผ่าน Docker Compose โดยให้ทำการสร้างไฟล์ `docker-compose.yml` ดังนี้
 
-```.yml
+```yml
 version: '3.9'
 services:
   db:
@@ -1322,7 +1322,7 @@ DATABASE_URL="postgresql://myapp:mypassword@localhost:9111/fullstack-nextjs?sche
 
 กำหนดข้อมูล model ผ่านไฟล์ `prisma/schema.prisma` ดังนี้
 
-```.prisma
+```prisma
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -1434,3 +1434,710 @@ pnpx prisma studio
 ```bash
 pnpm add -D @faker-js/faker
 ```
+
+ตัวอย่างการจำลองข้อมูลในไฟล์ /prisma/seed.ts
+
+```ts
+import {
+  type LeaveStatus,
+  type Prisma,
+  PrismaClient,
+} from '@/app/generated/prisma';
+import { slugify } from '@/features/shared/helpers/slugify';
+import { faker } from '@faker-js/faker';
+
+const prisma = new PrismaClient();
+
+async function main() {
+  //Create Admin
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@babelcoder.com' },
+    update: {},
+    create: {
+      email: 'admin@babelcoder.com',
+      name: 'Admin',
+      role: 'ADMIN',
+    },
+  });
+  //upsert = insert + update แปลว่าถ้ามันไม่เจอข้อมูลมาก่อนมันก็จะทำการสร้างแล้วใส่ไปในฐานข้อมูล
+  // แต่ถ้าข้อมูลมีอยู่แล้วมันก็จะทำการ update
+
+  // Create Users
+  const numsOfUsers = 10;
+  const userIds: number[] = [admin.id];
+  const adminIds: number[] = [admin.id];
+
+  for (let i = 0; i < numsOfUsers; i++) {
+    const createUserInput: Prisma.UserCreateInput = {
+      name: faker.internet.displayName(),
+      email: faker.internet.email(),
+      role: faker.helpers.arrayElement(['ADMIN', 'MANAGER', 'MEMBER']),
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+      // image: faker.internet.avatar(),
+      image: faker.image.avatar(),
+    };
+
+    const user = await prisma.user.upsert({
+      where: { email: createUserInput.email },
+      update: {},
+      create: createUserInput,
+    });
+
+    userIds.push(user.id); // ใน list ของ userId ก็จะมี user คนใหม่ที่เราเพิ่งสร้าง
+    if (user.role !== 'MEMBER') adminIds.push(user.id);
+  }
+
+  // Create Leaves
+  const numOfLeaves = 100;
+
+  for (let i = 0; i < numOfLeaves; i++) {
+    const status: LeaveStatus = faker.helpers.arrayElement([
+      'PENDING',
+      'APPROVED',
+      'REJECTED',
+    ]);
+    const userId = faker.helpers.arrayElement(userIds);
+    const leaveDate = faker.date.future().toISOString();
+    const createLeaveInput: Prisma.LeaveCreateInput = {
+      leaveDate,
+      reason: faker.lorem.paragraph(),
+      user: { connect: { id: userId } },
+      status,
+      rejectionReason:
+        status === 'REJECTED' ? faker.lorem.paragraph() : undefined,
+    };
+    // ค้นหาโดยใช้ where ใช้ตัวที่เป็น unique
+    await prisma.leave.upsert({
+      where: {
+        userId_leaveDate: {
+          userId,
+          leaveDate,
+        },
+      },
+      update: {},
+      create: createLeaveInput,
+    });
+  }
+
+  //Create Aricles
+  const numOfArticles = 100;
+
+  for (let i = 0; i < numOfArticles; i++) {
+    const title = faker.lorem.sentence();
+    const createArticleInput: Prisma.ArticleCreateInput = {
+      title,
+      slug: slugify(title),
+      excerpt: faker.lorem.paragraph(),
+      content: faker.lorem.paragraphs({ min: 3, max: 10 }),
+      image: faker.image.url(),
+      user: { connect: { id: faker.helpers.arrayElement(userIds) } },
+    };
+
+    await prisma.article.upsert({
+      where: { slug: createArticleInput.slug },
+      update: {},
+      create: createArticleInput,
+    });
+  }
+
+  //Create Announcements
+  const numOfAnnouncement = 100;
+
+  for (let i = 0; i < numOfAnnouncement; i++) {
+    const title = faker.lorem.sentence();
+    const createAnnouncementInput: Prisma.AnnouncementCreateInput = {
+      title,
+      slug: slugify(title),
+      excerpt: faker.lorem.paragraph(),
+      content: faker.lorem.paragraphs({ min: 3, max: 10 }),
+      user: { connect: { id: faker.helpers.arrayElement(userIds) } },
+    };
+
+    await prisma.announcement.upsert({
+      where: { slug: createAnnouncementInput.slug },
+      update: {},
+      create: createAnnouncementInput,
+    });
+  }
+}
+
+main()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.log(e);
+    await prisma.$disconnect();
+    process.exit(1); // บอกว่าถ้ามี error ก็จะ return เป็นเลข 1
+  });
+```
+
+### ออกคำสั่งรัน seed
+
+1. ต้องติดตั้ง package tsx ก่อนจะทำให้เราสามารถรันไฟล์ตัว typscript โดยตรงได้
+
+```bash
+pnpm add -D tsx
+```
+
+2. เพิ่มคำสั่งลงในไฟล์ package.json ต่อส่วนของ scripts
+
+```json
+  "scripts": {
+    "db:seed": "prisma db seed", //รัน prisma ให้สร้างข้อมูล
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio" //รัน prisma ให้สามารถดูข้อมูลที่สร้างมาได้
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+```
+
+---
+
+## 📍24. Prisma Workflow
+
+### Data Management Workflow สำหรับ Development
+
+การเริ่มต้นพัฒนาโปรแกรมกับฐานข้อมูลเราอาจออกแบบและกำหนด Prototype ของเราก่อนบน Model ของ Prisma จากนั้นจึงให้ Prisma อ่านไฟล์ Schema เพื่อสร้างตารางและเปลี่ยนแปลงโครงสร้างตามที่กำหนด อาศัยคำสั่งต่อไปนี้เราสามารถกำหนดการทำงานดังกล่าวข้างต้นได้
+
+```bash
+pnpx prisma db push
+```
+
+หากเรามีการแก้ไขไฟล์ Schema โดยทำการเพิ่ม field ที่จำเป็นต้องระบุทุกครั้ง เช่น ทำการเพิ่ม password เข้าไปยัง User
+
+```ts
+model User {
+  id            Int            @id @default(autoincrement())
+  name          String
+  password      String
+  email         String         @unique
+  image         String?
+  role          Role           @default(MEMBER)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @default(now())
+  leaves        Leave[]
+  articles      Article[]
+  announcements Announcement[]
+}
+```
+
+กรณีที่ตาราง User มีข้อมูลอยู่ก่อนแล้ว เมื่อออกคำสั่ง `pnpx prisma db push` Prisma จำเป็นต้อง reset ข้อมูลเนื่องจากข้อมูลของ User เดิม ไม่มี password มาก่อน แต่ field password นั้นจำเป็นต้องมีในทุก record ส่วนนี้ Prisma จะแจ้งเตือนเพื่อให้เราดำเนินการต่อ
+
+```bash
+⚠️ We found changes that cannot be executed:
+
+• Added the required column `password` to the `User` table without a default value. There are 2 rows in this table, it is not possible to execute this.
+
+? To apply this step we need to reset the database, do you want to continue? All data will be lost. » (y/N)
+```
+
+เมื่อเราทำการสร้างตารางบนฐานข้อมูลเรียบร้อยแล้ว ลำดับถัดไปเราจะเตรียมข้อมูลไว้ในฐานข้อมูลให้เรียบร้อย ข้อมูลส่วนนี้เตรียมไว้เพื่อใช้สำหรับ Development เท่านั้น กระบวนการเตรียมข้อมูลนี้เรียกว่า Database Seeding (ศึกษาข้อมูลเพิ่มเติมในหัวข้อ Database Seeding)
+
+เพื่อให้เราเห็นข้อมูลที่อยู่ในตารางต่าง ๆ Prisma ได้เตรียม Prisma Studio ซึ่งเป็นเครื่องมือสำหรับจัดการข้อมูล บนฐานข้อมูลไว้ให้แล้ว เราสามารถเปิด Prisma Studio ได้ด้วยการออกคำสั่ง
+
+```bash
+pnpx prisma studio
+```
+
+### Database Migrations
+
+เมื่อ Prototype นั้นได้รับการทดสอบเรียบร้อยแล้ว ให้เราทำการสร้าง script พิเศษสำหรับการสร้างตาราง หรือแก้ไขตารางและข้อมูล script พิเศษนี้จะถูกใช้งานในทุก Environment ไม่ว่าจะเป็น development, test หรือ production เราเรียก script นี้ว่า Migrations (ศึกษาเพิ่มเติมในหัวข้อ Migrations)
+
+เราสามารถสร้าง Migration แรกจาก schema ได้ด้วยการออกคำสั่งคือ
+
+สร้าง migration
+
+```bash
+pnpm prisma migrate dev --name (ชื่อ maigrate)
+```
+
+กรณีที่เราต้องการ reset ข้อมูลจากฐานข้อมูลของเรา สามารถออกคำสั่งดังต่อไปนี้ได้
+
+```bash
+pnpx prisma migrate reset
+```
+
+คำสั่งดังกล่าวข้างต้นจะกระทำการตามขั้นตอนต่อไปนี้
+
+1. ลบฐานข้อมูล
+2. สร้างฐานข้อมูลใหม่
+3. run migrations ทั้งหมดที่มีอยู่
+4. กระทำ database seeding
+
+แล้วรันคำสั่งนี้เพื่อเปิด
+
+```bash
+pnpm db:studio
+```
+
+เพิ่มส่วนของ scripts
+เพื่อให้การออกคำสั่งทั้งการ push ข้อมูล และการเปิด Prisma Studio เป็นไปได้โดยง่าย เราจะเพิ่ม scripts เหล่านี้เข้าไปยัง `package.json`
+
+```JSON
+{
+  "scripts": {
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset"
+  }
+}
+```
+
+เมื่อเราทำการสั่ง migrate ในลักษณะแบบนี้แล้วในครั้งถัดไปควรพยายามสร้าง migrate ทุกครั้ง เช่น
+เพิ่มตัว password ในส่วนของ schema ต้องใช้คำสั่ง
+
+```bash
+pnpm prisma migrate dev --name add_password_to_user_table --create-only
+```
+
+migration จะไม่ถูกสร้างเพราะ db ของเรามี user อยู่แล้วต้องใส่และแต่ละตัวไม่มี password เลยดังนั้นมันถือว่าข้อมูลไม่ consistency จึงต้องใส่ `--create-only` เพิ่มแต่มันจะทำการสร้างตัว migration ให้กับเราก็จริงแต่จะไม่รันให้
+เราสามารถไปเขียนในไฟล์ magration เพื่อ update ให้สามารถใส่ password ทีหลังได้โดยเขียน sql และใช้คำสั่ง update migration เพื่อ sync กับตัวอื่นๆ
+
+```bash
+pnpx prisma migrate dev
+```
+
+ถ้าหากเราขึ้นสู่ production เราจะออกคำสั่งในการรันโหมด production ได้ดังนี้
+
+```bash
+pnpx prisma migrate deploy
+```
+
+### Migration
+
+คำสั่งต่อไปนี้เป็นคำสั่งที่ถูกใช้เฉพาะบน Development
+
+1. กรณีของการพัฒนาอาจมีการเปลี่ยน schema โดยไม่ต้องการสร้าง Migration ให้ออกคำสั่ง `pnpm prisma db push`
+2. กรณีของการสร้าง Migration พร้อมสั่งรันเพื่อให้เกิดผลบนฐานข้อมูลให้ใช้คำสั่ง `pnpm prisma migrate dev --name <ชื่อ migration>`
+3. กรณีของการ seed ข้อมูล ให้ใช้คำสั่ง `pnpm prisma db seed`
+4. หากต้องการ reset ข้อมูลพร้อมรัน seed ใหม่ให้ใช้คำสั่ง `pnpm prisma migrate reset`
+
+คำสั่งต่อไปนี้ใช้เฉพาะบน Production
+`pnpm prisma migrate deploy`
+
+---
+
+## 📍25. Prisma Q & A
+
+- ทุกโมเดลที่จะสร้างต้องใส่อยู่ใน file: schema.prisma เท่านั้น
+
+## 📍26. Connecting API to the Database
+
+### ทำการสร้างไฟล์ /features/shared/db.ts
+
+ระบุให้เราทราบว่าปัจจุบันเรารัน node แบบไหนแบบ development or production
+
+```ts
+import { PrismaClient } from '@/app/generated/prisma';
+
+const prisma = new PrismaClient({
+  log:
+    process.env.NODE_ENV === 'development'
+      ? ['query', 'error', 'warn'] // รัน node แบบ development
+      : ['error'], // รัน node แบบ production
+});
+export default prisma;
+```
+
+แล้วต่อไปนี้ถ้าเราจะใช้งานก็แค่เรียกตัว prisma มาใช้งาน
+
+### update ตัว api ที่เคยสร้าง
+
+1. `/features/articles/api.ts`
+   ทำการลบ api ที่เคยสร้างเพราะจะทำการแยก api ระหว่างคนธรรมดากับ api admin
+
+```tsx
+import { faker } from '@faker-js/faker';
+import {
+  type CreateArticleInput,
+  type Article,
+  type UpdateArticleInput,
+} from '@/features/articles/types';
+
+const length = faker.helpers.rangeToNumber({ min: 3, max: 10 }); // จำลองความยาวของ articles
+let articles = Array.from({ length }).map(() => ({
+  id: faker.number.int(), // จำนวนเต็ม
+  title: faker.lorem.sentence(), // gxHoxitFp8
+}));
+
+export const findAll = () => {
+  return Promise.resolve(articles);
+};
+
+export const findById = async (id: Article['id']) => {
+  const article = articles.find((article) => article.id === id); //ใช้ find ในกาวนลูปเช็คว่า article.id ตรงกับ id ที่รับมารึเปล่า
+
+  if (!article) return Promise.resolve(null); //กรณีหา article ไม่เจอ
+
+  return Promise.resolve(article); // ใช้ Promise เพราะต้องการทำให้ฟังก์ชันนี้เป็น Promise ตอนเรียกใช้งานจะได้ await ได้เลย
+};
+
+export const create = (form: CreateArticleInput) => {
+  const article = {
+    id: faker.number.int(),
+    ...form,
+  };
+
+  articles.push(article);
+  return Promise.resolve(article);
+};
+
+export const update = async (id: Article['id'], form: UpdateArticleInput) => {
+  const article = await findById(id);
+  if (!article) return Promise.resolve(null);
+
+  Object.assign(article, form); // แปลเป็น javascript โดยใช้ Object.assign()
+  return Promise.resolve(article);
+};
+
+export const remove = (id: Article['id']) => {
+  const index = articles.findIndex((article) => article.id === id); // findIndex หาว่าข้อมูลนั้นอยู่ในตำแหน่งไหน คืนค่าเป็น index
+  const newArticles = [
+    ...articles.slice(0, index), //slice ณ ที่นี้คือ เลือกเอาค่าตั้งแต่ตัวแรก จนถึงก่อนหน้า index ที่เราไม่ต้องการ คืนค่าเป็น array
+    ...articles.slice(index + 1), // เลือกเอาตั้งแต่หลัง index เป็นต้นไปจนหมด
+  ];
+
+  articles = newArticles;
+  return Promise.resolve(index); // ถ้าหาข้อมูลไม่เจอ index จะเป็น -1
+};
+```
+
+โค้ดที่ทำการแก้ใหม่ในไฟล์ `/features/articles/api.ts`
+
+```tsx
+import db from '@/features/shared/db'; // คือ prisma
+
+export const findAll = async () => {
+  const articles = await db.article.findMany({
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      excerpt: true,
+      image: true,
+    },
+    orderBy: {
+      updateAt: 'desc',
+    },
+  });
+
+  return articles;
+};
+
+export const findById = async (id: number) => {
+  const article = await db.article.findUnique({
+    where: { id },
+  });
+
+  return article;
+};
+```
+
+- findAll: findMany คิือการหาหลายๆตัว ถ้าเขียน findMany() แบบนี้จะได้ทั้งหมดออกมาแต่ถ้าเราไม่ต้องการเอาออกมาทั้งหมดตลอดสามารถ select ออกมาได้เพื่อไม่ให้เปลือง Bw
+- findAll: desc มาหลังหรือปัจจุบันอยู่บน แต่ถ้า asc มาก่อนอยู่บน
+
+- findById: ทำการค้นหาตัว article ของเรา ค้นหาด้วย id ไอดีมัน unique เลยต้องใช้ findUnique แล้วทำการ where แล้วก็ select แต่ถ้าต้องการคืนทั้งหมดไม่ต้องใส่เลยมันจะคืนให้อยู่แล้ว
+
+ต่อมาทำการสร้าง api admin เพื่อ create update delete ในไฟล์ `/features/articles/admin/api.ts`
+
+```ts
+import db from '@/features/shared/db';
+import { type z } from 'zod';
+import type * as validators from './validators';
+import { slugify } from '@/features/shared/helpers/slugify';
+import { revalidatePath } from 'next/cache';
+
+export const add = async (input: z.infer<typeof validators.add>) => {
+  const article = await db.article.create({
+    data: {
+      ...input,
+      userId: 1, // ใส่ไปก่อนเพราะยังไม่มีระบบ login
+      image: 'http://1234.png',
+      slug: slugify(input.title),
+    },
+  });
+  revalidatePath('/articles'); //add แล้วให้ไปเพิ่มข้อมูลใหม่
+
+  return article;
+};
+
+export const update = async (
+  id: number,
+  input: z.infer<typeof validators.update>,
+) => {
+  const article = await db.article.update({
+    where: { id },
+    data: {
+      ...input,
+      image: 'http://123456.com',
+      userId: 1,
+      slug: input.title ? slugify(input.title) : undefined,
+    },
+  });
+
+  revalidatePath('/articles');
+  revalidatePath(`/articles/${id}`);
+
+  return article;
+};
+
+export const remove = async (id: number) => {
+  const article = await db.article.delete({
+    where: { id },
+  });
+
+  revalidatePath('/articles');
+  revalidatePath(`/articles/${id}`);
+
+  return article;
+};
+```
+
+2. `/features/announcements/api.ts`
+
+```ts
+import db from '@/features/shared/db';
+
+export const findAll = async () => {
+  const announcements = await db.announcement.findMany({
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      excerpt: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return announcements;
+};
+
+export const findById = async (id: number) => {
+  const announcement = await db.announcement.findUnique({
+    where: { id },
+  });
+
+  if (!announcement) throw new Error('announcement not found'); // announcement มีบางค่าเป็น null เลยต้องเขียน
+
+  return announcement;
+};
+```
+
+สร้าง typse.ts ให้มันใหม่
+เพื่อที่จะไม่ต้องแก้ types หลายอันมันจะ refer ไปถึงไหล์ api ทุกอย่างก็จะแก้อยู่ที่ api ที่เดียวชนิดข้อมูลก็จะ sync กันทั้งโปรเจคเลย
+file: /features/articles/types.ts
+
+```ts
+import { type findAll, type findById } from '@/features/articles/api';
+
+export type ArticleItem = Awaited<ReturnType<typeof findAll>>[number];
+
+export type ArticleDetails = NonNullable<Awaited<ReturnType<typeof findById>>>;
+// NonNullable เอา null ออก
+```
+
+file: /features/articles/admin/types.ts
+
+```ts
+import { type add, type update } from '@/features/articles/admin/api';
+
+export type AddAritcleInput = Parameters<typeof add>[0];
+
+export type UpdateAritcleInput = Parameters<typeof update>[0];
+```
+
+file: /features/announcements/types.ts
+
+```ts
+import { type findById, type findAll } from '@/features/announcements/api';
+
+export type AnnouncementItem = Awaited<ReturnType<typeof findAll>>[number];
+
+export type AnnouncementDetails = NonNullable<
+  Awaited<ReturnType<typeof findById>>
+>;
+```
+
+---
+
+## 📍27. Tailwind CSS and Shadcn UI
+
+### การติดตั้ง Shadcn UI
+
+Shadcn UI เป็นไลบรารี่ที่มาพร้อมกับคอมโพแนนท์สำเร็จรูปที่ใช้ประกอบร่างเป็น UI ที่ต้องการได้ เช่น Button Form และ Dialog เป็นต้น คอมโพแนนท์ต่าง ๆ ของ Shadcn UI จะถูกติดตั้งอยู่ภายใต้โปรเจคของเราโดยตรง ด้วยเหตุนี้เราจึงสามารถแก้ไขคอมโพแแนท์ของ Shadcn UI ที่ถูกติดตั้งบนโปรเจคของเราให้เป็นไปตามรูปแบบที่ต้องการได้
+
+ทำการออกคำสั่งต่อไปนี้เพื่อติดตั้ง Shadcn UI พร้อมตอบคำถามตามการตั้งค่าดังแสดงในตัวอย่างนี้
+
+```bash
+pnpm dlx shadcn@latest init
+```
+
+เนื่องจากเบื้องหลังการทำงานของ Shadcn UI จะใช้ Tailwind CSS เราจะทำการตั้งค่า Tailwind ให้ประมวลผล class ของ CSS ในคอมโพแนนท์ที่อยู่ภายใต้ โฟลเดอร์ `app` และ `features` ด้วยการแก้ไขส่วนของ content ในไฟล์ `tailwind.config.ts` ดังนี้
+
+ลองใช้ `pnpm dlx shadcn@latest add button` จะได้โฟลเดอร์และไฟล์ components/ui/...
+
+### ทำการสร้างไฟล์ tailwind.config.ts
+
+```ts
+/* eslint-disable @typescript-eslint/no-require-imports */
+import type { Config } from 'tailwindcss';
+
+const config: Config = {
+  content: [
+    './app/**/*.{ts,tsx}',
+    './features/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+  ],
+  theme: {
+    container: {
+      center: true,
+      padding: '2rem',
+      screens: {
+        '2xl': '1400px',
+      },
+    },
+    extend: {
+      colors: {
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
+        },
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
+        },
+        accent: {
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
+        },
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
+        },
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
+        },
+      },
+      borderRadius: {
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
+      },
+      keyframes: {
+        'accordion-down': {
+          from: { height: '0' },
+          to: { height: 'var(--radix-accordion-content-height)' },
+        },
+        'accordion-up': {
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: '0' },
+        },
+      },
+      animation: {
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out',
+      },
+    },
+  },
+  plugins: [require('tailwindcss-animate')],
+};
+export default config;
+```
+
+แก้ไขไฟล์ app/layout.tsx ดังนี้
+
+```ts
+{
+  content: ['./app/**/*.{ts,tsx}', './features/**/*.{ts,tsx}'],
+}
+```
+
+### ใช้ font จาก google font
+
+สามารถเซตได้ดังนี้และติดตั้ง cn ในไฟล์ /app/layout.tsx
+
+```tsx
+iimport './globals.css';
+
+import { Inter as FontSans } from 'next/font/google';
+
+import { cn } from '@/lib/utils';
+
+const fontSans = FontSans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+});
+
+export const metadata = {
+  title: 'Create Next App',
+  description: 'Generated by create-next-app',
+  icons: [{ rel: 'icon', url: '/favicon.ico' }],
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body
+        className={cn(
+          'bg-background min-h-screen font-sans antialiased',
+          fontSans.variable,
+        )}
+      >
+        {children}
+      </body>
+    </html>
+  );
+}
+
+```
+
+ทดลองทำการติดตั้งคอมโพแนนท์จาก Shadcn UI เช่น button โดยใช้คำสั่งต่อไปนี้
+
+```bash
+pnpx shadcn-ui@latest add button
+```
+
+### Icon: lucide
+
+ถูกติดตั้งมากับ shadcn: https://lucide.dev/
+
+### Lodash
+
+Lodash เป็น utility fuction ที่มีตัวฟังก์ชันต่างๆให้เราใช้งานและช่วยชีวิตเราให้มันง่ายขึ้นในการ dev
+
+```bash
+pnpm add lodash
+```
+
+ตัว lodash เขียนด้วยตัว javascrip ล้วนๆ มันจึงไม่รู้เรื่องของชนิดข้อมูลและก็ไม่รู้ส่าตัวเองมีฟังก์ชันอะไรอยู่บ้าง จึงต้องติดตั้งชนิดข้อมูลแยก
+
+```bash
+pnpm add -D @types/lodash
+```
+
+---
+
+## 📍29. Custom Components

@@ -4,6 +4,15 @@ const path = require('path');
 /** @type {import("eslint").Linter.Config} */
 const config = {
   parser: '@typescript-eslint/parser',
+  ignorePatterns: [
+    'postcss.config.mjs',
+    'tailwind.config.ts',
+    'next.config.js',
+    '*.config.js',
+    '*.config.cjs',
+    '*.config.mjs',
+    '*.config.ts',
+  ],
   parserOptions: {
     project: true,
   },

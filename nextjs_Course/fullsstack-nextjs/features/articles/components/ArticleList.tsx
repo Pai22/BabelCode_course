@@ -1,24 +1,22 @@
-import { type findAll } from '@/features/articles/api';
-import Link from 'next/link';
+import type * as types from '@/features/articles/types';
+import ArticleItem from '@/features/articles/components/ArticleItem';
+import { Separator } from '@/components/ui/separator';
 
 interface ArticleListProps {
-  articles: Awaited<ReturnType<typeof findAll>>;
-  // RetrunType คือ เข้าถึงสิ่งที่คืนออกมาจากฟังก์ชันก่อน
-  //ของที่มันคืนออกมาติด promise จึงต้องใส่ await เพื่อให้เอาแต่ใส่ใน
-  //จะได้ articles ที่ sync กับ api แล้ว
+  articles: types.ArticleItem[];
 }
 
 const ArticleList = ({ articles }: ArticleListProps) => {
   return (
-    <>
-      <ul>
-        {articles.map((articles) => (
-          <li key={articles.id}>
-            <Link href={`/articles/${articles.id}`}>{articles.title}</Link>
-          </li>
+    <section>
+      <h1 className="my-4 text-center text-4xl font-bold">All Articles</h1>
+      <Separator className="my-4"></Separator>
+      <div className="mx-auto grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {articles.map((article) => (
+          <ArticleItem key={article.id} {...article} />
         ))}
-      </ul>
-    </>
+      </div>
+    </section>
   );
 };
 export default ArticleList;

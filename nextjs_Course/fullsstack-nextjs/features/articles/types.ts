@@ -1,11 +1,6 @@
-import { type update, type add } from '@/features/articles/validators';
-import { type z } from 'zod';
+import { type findAll, type findById } from '@/features/articles/api';
 
-export interface Article {
-  id: number;
-  title: string;
-}
+export type ArticleItem = Awaited<ReturnType<typeof findAll>>[number];
 
-export type CreateArticleInput = z.infer<typeof add>;
-// infer แปลว่าให้ infer ชนิดข้อมูลจากโครงสร้างที่เราเขียนในกฎ validate
-export type UpdateArticleInput = z.infer<typeof update>;
+export type ArticleDetails = NonNullable<Awaited<ReturnType<typeof findById>>>;
+// NonNullable เอา null ออก

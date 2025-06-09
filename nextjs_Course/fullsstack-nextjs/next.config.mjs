@@ -10,7 +10,24 @@ const nextConfig = {
         destination: '/leaves',
         permanent: true,
       },
+      {
+        source: '/admin',
+        destination: '/admin/dashboard',
+        permanent: true,
+      },
     ];
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
+      {
+        protocol: 'https',
+        hostname: 'loremflickr.com',
+      },
+    ],
   },
 };
 
