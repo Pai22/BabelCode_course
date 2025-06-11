@@ -5,6 +5,7 @@ import Image from 'next/image';
 
 interface ArticleDetailProps {
   article: ArticleDetails;
+  onUpdate?: (id: ArticleDetails['id']) => Promise<void>;
 }
 
 const ArticleDetail = ({

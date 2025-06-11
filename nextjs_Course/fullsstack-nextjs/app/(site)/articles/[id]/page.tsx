@@ -1,7 +1,8 @@
-import { findById, update } from '@/features/articles/api';
+import { findById } from '@/features/articles/api';
 import ArticleDetail from '@/features/articles/components/ArticleDetail';
-import { type Article } from '@/features/articles/types';
+import { type ArticleDetails } from '@/features/articles/types';
 import { revalidatePath } from 'next/cache';
+import { update } from '@/features/articles/admin/api';
 
 interface ArticlePageProps {
   params: Promise<{
@@ -14,9 +15,9 @@ export const generateStaticParams = () => {
 };
 
 // Server Action
-const updateArticle = async (id: Article['id']) => {
+const updateArticle = async (id: ArticleDetails['id']) => {
   'use server'; // บ่งบอกว่า function นี้กระทำอยู่ฝั่ง server เพราะจะส่ง function นี้ไปทำงานในส่วนของ client component
-  await update(id, { title: 'yyy' });
+  await update(+id, { title: 'yyy' });
   revalidatePath(`/article/${id}`); // บ่งบอกว่าให้ path นี้ build ใหม่
 };
 

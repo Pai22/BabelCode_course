@@ -3,6 +3,8 @@ import './globals.css';
 import { Inter as FontSans } from 'next/font/google';
 
 import { cn } from '@/lib/utils';
+import ClientProviders from '@/features/shared/components/ClintProviders';
+import Toast from '@/features/ui/components/Toast';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -28,7 +30,10 @@ export default function RootLayout({
           fontSans.variable,
         )}
       >
-        {children}
+        <ClientProviders>
+          {children}
+          <Toast></Toast>
+        </ClientProviders>
       </body>
     </html>
   );

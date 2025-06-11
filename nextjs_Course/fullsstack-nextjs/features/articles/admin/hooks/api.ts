@@ -1,4 +1,8 @@
 import {
+  UpdateAritcleInput,
+  type AddArticleInput,
+} from '@/features/articles/admin/types';
+import {
   type ArticleDetails,
   type ArticleItem,
 } from '@/features/articles/types';
@@ -37,4 +41,42 @@ export const useGetArticle = (id: ArticleDetails['id']) => {
   }, []);
 
   return article;
+};
+
+export const useCreateArticle = () => {
+  return {
+    mutateAsync: async (form: AddArticleInput) => {
+      const formData = new FormData();
+      formData.append('title', form.title);
+      formData.append('excerpt', form.excerpt);
+      formData.append('content', form.content);
+      if (form.image) formData.append('image', form.image);
+
+      const res = await fetch('/api/admin/articles', {
+        method: 'POST',
+        body: formData,
+      });
+      const article = await (res.json() as Promise<ArticleDetails>);
+
+      return article;
+    },
+  };
+};
+
+export const useEditArticle = (id: ArticleDetails['id']) => {
+  return {
+    mutateAsync: async (form: UpdateAritcleInput) => {
+      const res = await fetch(`/api/admin/articles/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(form),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log(res);
+      const article = await (res.json() as Promise<ArticleDetails>);
+
+      return article;
+    },
+  };
 };

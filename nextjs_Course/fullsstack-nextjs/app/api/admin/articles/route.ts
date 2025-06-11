@@ -1,26 +1,21 @@
-import { create } from '@/features/articles/api';
-import { type CreateArticleInput } from '@/features/articles/types';
-import { add } from '@/features/articles/validators';
+import * as api from '@/features/articles/admin/api';
 import { revalidatePath } from 'next/cache';
 
 export const POST = async (req: Request) => {
-  const form = await (req.json() as Promise<CreateArticleInput>);
-  const formValidation = await add.safeParseAsync(form); // เช็คว่าข้อมูลใน form ของเราตรงตามกฎที่มีใน add หรือเปล่า
+  const formData = await req.formData();
+  const image = formData.get('image') as File | null;
+  const article = api.add({
+    title: formData.get('title') as string,
+    excerpt: formData.get('excerpt') as string,
+    content: formData.get('content') as string,
+    image,
+  });
 
-  if (!formValidation.success) {
-    return new Response(JSON.stringify(formValidation.error), {
-      status: 422,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  revalidatePath('/articles');
 
-  const article = await create(formValidation.data); // ทำการสร้างข้อมูลเสร็จเรียบร้อย
-  revalidatePath('/articles'); // ข้อมูลไม่อัพเดตแล้วนะ แล้วก็ generate ใหม่ให้หน่อยเพราะตอนนี้มีของใหม่แล้ว
   return new Response(JSON.stringify(article), {
     status: 201,
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
   });
 };
 // การทำ http POST จะต้องมีการส่งข้อมูลมาจากฝั่งของ client ด้วย ข้อมูลที่ส่งมาคือ payload

@@ -3,6 +3,7 @@ import type * as types from '@/features/articles/types';
 import Image from 'next/image';
 import Link from 'next/link';
 import { truncate } from 'lodash';
+import { getImagePath } from '@/features/shared/helpers/upload';
 
 const ArticleItem = ({ id, title, excerpt, image }: types.ArticleItem) => {
   return (
@@ -10,7 +11,7 @@ const ArticleItem = ({ id, title, excerpt, image }: types.ArticleItem) => {
       <Card className="h-full">
         <div className="relative h-[200px]">
           <Image
-            src={image}
+            src={getImagePath(image)}
             alt={title}
             fill
             sizes="(min-width: 800px) 50vw, 100vw"
