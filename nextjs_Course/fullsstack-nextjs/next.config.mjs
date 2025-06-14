@@ -1,15 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   eslint: {
     dirs: ['.'],
+    ignoreDuringBuilds: true,
   },
   redirects() {
     return [
-      {
-        source: '/',
-        destination: '/leaves',
-        permanent: true,
-      },
+      // {
+      //   source: '/',
+      //   destination: '/leaves',
+      //   permanent: true,
+      // },
       {
         source: '/admin',
         destination: '/admin/dashboard',

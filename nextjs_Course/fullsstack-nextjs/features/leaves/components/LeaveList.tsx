@@ -1,12 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import LeaveItem from '@/features/leaves/components/LeaveItem';
-import { type Leave } from '@/features/leaves/types';
+import type * as types from '@/features/leaves/types';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface LeaveListProps {
-  leaves: Leave[];
+  leaves: types.LeaveItem[];
 }
 
 const LeaveList = ({ leaves }: LeaveListProps) => {

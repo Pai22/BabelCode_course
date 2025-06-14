@@ -12,6 +12,7 @@ const config = {
     '*.config.cjs',
     '*.config.mjs',
     '*.config.ts',
+    'app/generated/prisma/*',
   ],
   parserOptions: {
     project: true,

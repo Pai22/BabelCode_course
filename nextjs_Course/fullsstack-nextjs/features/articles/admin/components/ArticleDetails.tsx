@@ -17,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ArticleForm from '@/features/articles/admin/components/ArticleForm';
-import { UpdateAritcleInput } from '@/features/articles/admin/types';
+import { type UpdateAritcleInput } from '@/features/articles/admin/types';
 import { getImagePath } from '@/features/shared/helpers/upload';
 
 interface ArticlesDetailsProps {

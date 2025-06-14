@@ -9,6 +9,6 @@ export function getImagePath(file?: string | null) {
     z.string().url().parse(file);
     return file;
   } catch {
-    return `/uploads/${file}`;
+    return `/api/uploads/${file}`;
   }
 }

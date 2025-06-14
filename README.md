@@ -24,9 +24,9 @@
 ## 📚 คอร์สที่เรียนทั้งหมด
 
 1. 🚀 React Fundamentals ✅ 
-2. ⚡️ Next.js / TypeScript *(กำลังเรียน)*
-3. 🛠 Go REST API
-4. 🐳 DevOps (Docker, Kubernetes)
+2. ⚡️ Next.js / TypeScript ✅ 
+3. 🐳 DevOps (Docker, Kubernetes) *(กำลังเรียน)*
+4. 🛠 Go REST API
 
 ---
 
@@ -35,9 +35,9 @@
 | Technology | 📈 Learning Curve  |  Weeks     |
 |---------|----------------------|-----------|
 | React Fundamentals     |  ✅ Completed |1-2  |
-| Next.js / TypeScript     |  🟡 Currently Learning       |2-3|
-| Go REST API    | Medium-High     |3-4   |
-| DevOps (Docker, K8s)  |  Medium-High      |4-5  |
+| Next.js / TypeScript     |  ✅ Completed    |2-3|
+| DevOps (Docker, K8s)  |  🟡 Currently Learning      |3-4  |
+| Go REST API    | Medium-High     | 4-5 |
  
 ---
 
@@ -46,9 +46,9 @@
 | 📚 Course              | 🔍 Status         | 📈 Progress | 🗓️ Latest update   |
 |------------------------|------------------|----------------|---------------------|
 | React Fundamentals     |   ✅ Completed      | 100%| 28 พ.ค. 2568        |
-| Next.js / TypeScript    | 🟡 Currently Learning (33/39)     | 84%      | 11 มิ.ย. 2568     |
+| Next.js / TypeScript    | ✅ Completed (39/39)     | 100%      | 13 มิ.ย. 2568     |
+| DevOps Fundamentals           | 🟡 Currently Learning | 0%             | -                   |
 | Go REST API   | ⬜ Not Started    | 0%             | -                   |
-| DevOps Fundamentals           | ⬜ Not Started     | 0%             | -                   |
  
 > 📝 หมายเหตุ: จะอัปเดตความคืบหน้าในตารางนี้เมื่อมีการเรียนรู้และทำแบบฝึกหัดเสร็จในแต่ละหัวข้อค่ะ
 

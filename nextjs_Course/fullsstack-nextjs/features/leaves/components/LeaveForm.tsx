@@ -10,7 +10,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import {
   type AddLeaveInput,
-  type Leave,
+  type LeaveDatails,
   type UpdateLeaveInput,
 } from '@/features/leaves/types';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,7 +36,7 @@ export type LeaveFormProps =
     }
   | {
       kind: 'edit';
-      leave: Leave;
+      leave: LeaveDatails;
       onSubmit: SubmitHandler<UpdateLeaveInput>;
     };
 
@@ -52,9 +52,13 @@ const LeaveForm = (props: LeaveFormProps) => {
     defaultValues: kind === 'edit' ? props.leave : undefined,
   });
 
+  const typedOnSubmit = onSubmit as SubmitHandler<
+    AddLeaveInput | UpdateLeaveInput
+  >;
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit(typedOnSubmit)}>
         <h1 className="text-center text-3xl font-bold">{title}</h1>
         <Separator className="my-4"></Separator>
         <FormField

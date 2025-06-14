@@ -5,6 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { type ReactNode } from 'react';
+import AuthMenu from '@/features/auth/components/AuthMenu';
+import ProtectedResource from '@/features/auth/guards/ProtedResource';
 
 interface NavLinkProps {
   path: string;
@@ -36,10 +38,14 @@ const Header = () => {
           height={50}
         ></Image>
       </Link>
-      <NavLink path="/admin">Admin</NavLink>
+      <ProtectedResource roles={['ADMIN', 'MANAGER']}>
+        <NavLink path="/admin">Admin</NavLink>
+      </ProtectedResource>
       <NavLink path="/leaves">Leaves</NavLink>
       <NavLink path="/articles">Articles</NavLink>
       <NavLink path="/announcements">Announcements</NavLink>
+      <div className="!ml-auto h-[40px] w-[1px] bg-gray-300"></div>
+      <AuthMenu></AuthMenu>
     </nav>
   );
 };

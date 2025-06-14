@@ -1,7 +1,7 @@
 import { ACCEPTED_IMAGE_TYPES } from '@/features/shared/validators/images';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { ChangeEventHandler, useState } from 'react';
+import { type ChangeEventHandler, useState } from 'react';
 
 interface ImageUploaderProps {
   defaultImage: string;

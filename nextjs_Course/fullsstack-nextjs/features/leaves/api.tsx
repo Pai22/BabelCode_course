@@ -4,8 +4,9 @@ import {
 } from '@/features/leaves/types';
 import db from '@/features/shared/db';
 
-export const findAll = async () => {
+export const findAll = async (userId: number) => {
   const leaves = await db.leave.findMany({
+    where: { userId },
     select: {
       id: true,
       reason: true,
@@ -22,22 +23,17 @@ export const findAll = async () => {
 export const findById = async (id: number) => {
   const leave = await db.leave.findUnique({
     where: { id },
-    select: {
-      id: true,
-      leaveDate: true,
-      reason: true,
-    },
   });
 
   if (!leave) throw new Error('leave not found');
   return leave;
 };
 
-export const add = async (input: AddLeaveInput) => {
+export const add = async (userId: number, input: AddLeaveInput) => {
   const leave = await db.leave.create({
     data: {
       ...input,
-      userId: 1,
+      userId,
     },
   });
 

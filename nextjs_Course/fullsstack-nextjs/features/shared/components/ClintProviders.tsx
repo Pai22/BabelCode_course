@@ -2,7 +2,8 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { ReactNode } from 'react';
+import { SessionProvider } from 'next-auth/react';
+import { type ReactNode } from 'react';
 
 const queryClient = new QueryClient();
 
@@ -13,7 +14,7 @@ interface ClientProvidersProps {
 const ClientProviders = ({ children }: ClientProvidersProps) => {
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <SessionProvider>{children}</SessionProvider>
       <ReactQueryDevtools initialIsOpen={false}></ReactQueryDevtools>
       {/*  ReactQueryDevtools เป็นเครื่อง debug ค่าที่อยู่มน cash */}
     </QueryClientProvider>

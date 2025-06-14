@@ -1,7 +1,7 @@
 // สร้าง function สำหรับ save file ลงบยเครื่องของเรา
 
-import { mkdir, unlink, writeFile } from 'fs/promises';
-import { join } from 'path';
+import { mkdir, rm, unlink, writeFile } from 'fs/promises';
+import { dirname, join } from 'path';
 
 export const saveFile = async (file: File) => {
   const bytes = await file.arrayBuffer();
@@ -18,4 +18,9 @@ export const saveFile = async (file: File) => {
 
 export const removeFile = (path: string) => {
   return unlink(join('public', 'uploads', path));
+};
+
+export const removeDirFromFile = (path: string) => {
+  const dir = join('public', 'upload', dirname(path));
+  return rm(dir, { recursive: true, force: true });
 };

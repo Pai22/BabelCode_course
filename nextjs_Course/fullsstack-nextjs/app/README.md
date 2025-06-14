@@ -2208,4 +2208,411 @@ middleware คือเครื่องมืออื่นๆที่ใช
 
 ---
 
-## 📍34. Authentication
+## 📍34. Authentication(เช็คว่าเป็นใคร)
+
+เกี่ยวกับ register, login and logout โดยใช้ library `Auth.js`
+
+### ทำการเพิ่ม password ไปที่ schema.prisma ของ user
+
+ใช้คำสั่ง `pnpm prisma migrate dev --name add_password_to_user_table --create-only` เป็นคำสั่งสร้าง migration แต่ยังไม่รัน migration
+
+- ไปยังโฟลเดอร์ migrations แล้วเปิดไฟล์ล่าสุด แล้วเขียน create เพิ่ม
+
+```sql
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "password" TEXT;
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+UPDATE "User" SET password = uuid_generate_v4();
+```
+
+ใช้คำสั่ง `pnpm prisma migrate dev ` ในการรัน migration ตัวนี้
+รัน `pnpm db:studio` เพื่อเปิด ก็จะเห็น password แล้ว
+
+- ไปไฟล์ schema.prisma แล้วเอา `?` ตรง password ออกแล้วรัน `pnpm prisma migrate dev --name add_not_null_to_password`
+
+ไปแก้ไฟล์ seed.ts เพื่อให้มี passwored
+ติดตั้ง package `pnpm add bcryptjs` และ `pnpm add -D @types/bcryptjs`
+
+<!-- const loginForm = useForm<types.Signin>({
+    resolver: zodResolver(validators.signin),
+    defaultValues: { email: '', password: '' },
+  });
+
+  const registerForm = useForm<types.Signup>({
+    resolver: zodResolver(validators.signup),
+    defaultValues: { email: '', password: '', name: '' },
+  });
+
+  const form = kind === 'login' ? loginForm : registerForm; -->
+
+### install `auth`
+
+```bash
+pnpm add next-auth
+```
+
+- config next auth ให้สามารถใช้งานได้โดยสร้างไฟล์ config
+
+## 📍35. Authorization(ตรวจสอบสิทธิ์)
+
+## 📍 36. Advanced App Router
+
+### parallel rouste
+
+แยก route สำหรับการโหลด articles แบบ parallel แยกกันโหลดกับหน้าหลัก
+
+ประกาศโดยสร้างโฟลเดอร์จะมี `@` นำหน้า
+
+### intercept Route
+
+คือการแสดงผล details เป็น dialog มีการเปลี่ยน path แต่จะไม่แสดงผลเป็น full pages
+
+- ทำการแทรกกลางการแสดงผลของเรา
+
+## 📍37. SEO (search engine optimization)
+
+title บน web browser ต้องใช้คำที่สื่อว่าหน้าจอที่อยู่ตอนนี้คืออะไร จึงต้องมีการเซตค่าเรียหว่า Meta Data สามารถไปเซตอยู่ที่ pages.tsx หรือ layout.tsx ก็ได้
+
+### Thundermole
+
+ทำให้เราสามารถทดสอบตัวเว็บที่รันอยู่ local บนตัวของ social ได้ ทดสอบโดยการออกคำสั่ง `pnpx tunnelmole (port ที่รัน)` มันจะ generate URL ที่สามารถ access จากโลกภายนอก แล้วเอา url นั้นไปเทสกับ facebookdebuger วาง url ไปก็จะเห็นตัวอย่างเว็บของเราตอนเราโพตส์บนเฟส
+
+- robots ดูว่าในแอพมีลิงค์อะไรที่เข้าถึงได้บ้าง
+- sitemap
+
+---
+
+## 📍38. React Optimization
+
+Optimization ตัว react ให้มีความสามารถในการปรับปรุงประสิทธิภาพให้ดีขึ้นได้
+
+```jsx
+'use client';
+
+import { useState } from 'react';
+
+interface Todo {
+  id: number;
+  text: string;
+}
+
+interface TodoListProps {
+  todos: Todo[];
+  prefix: string;
+}
+
+interface TodoItemProps {
+  todo: Todo;
+  prefix: string;
+}
+
+interface TodoFormProps {
+  onSubmit: (text: string) => void;
+}
+
+const TodoList = ({ todos, prefix }: TodoListProps) => {
+  return (
+    <ul>
+      {todos.map((todo) => (
+        <TodoItem key={todo.id} prefix={prefix} todo={todo}></TodoItem>
+      ))}
+    </ul>
+  );
+};
+
+const TodoItem = ({ prefix, todo }: TodoItemProps) => {
+  return (
+    <li>
+      {prefix}: {todo.text} ({todo.id})
+    </li>
+  );
+};
+
+const TodoForm = ({ onSubmit }: TodoFormProps) => {
+  const [text, setText] = useState('');
+  const handleSubmit = () => {
+    onSubmit(text);
+    setText('');
+  };
+
+  return (
+    <>
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        className="border"
+      />
+      <button onClick={handleSubmit}>Add</button>
+    </>
+  );
+};
+
+const TodoListApp = () => {
+  const [prefix, setPrefix] = useState('');
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const addTodo = (text: string) => {
+    setTodos([...todos, { id: +new Date(), text }]);
+  };
+
+  return (
+    <>
+      <input
+        type="text"
+        value={prefix}
+        onChange={(e) => setPrefix(e.target.value)}
+        className="border"
+      />
+      <TodoForm onSubmit={addTodo}></TodoForm>
+      <TodoList prefix={prefix} todos={todos}></TodoList>
+    </>
+  );
+};
+
+export default TodoListApp;
+```
+
+- memo
+- useMemo
+
+---
+
+## 📍39. Deployment
+
+ให้ทำการแก้ไขและเตรียมไฟล์ต่าง ๆ ดังนี้ deploy แค่ standalone สำหรับ next js
+
+1. สร้างไฟล์ `Dockerfile`
+
+```Dockerfile
+##### DEPENDENCIES
+
+FROM --platform=linux/amd64 node:21.5.0-alpine3.18 AS deps
+WORKDIR /app
+
+# Install Prisma Client - remove if not using Prisma
+
+COPY prisma ./
+
+# Install dependencies based on the preferred package manager
+
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml\* ./
+
+RUN \
+if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+elif [ -f package-lock.json ]; then npm ci; \
+elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i; \
+else echo "Lockfile not found." && exit 1; \
+fi
+
+##### BUILDER
+
+FROM --platform=linux/amd64 node:21.5.0-alpine3.18 AS builder
+ARG DATABASE_URL
+ARG NEXT_PUBLIC_CLIENTVAR
+ARG NEXTAUTH_SECRET
+ARG NEXTAUTH_URL
+ARG NEXTAPP_URL
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN \
+if [ -f yarn.lock ]; then SKIP_ENV_VALIDATION=1 yarn db:deploy && yarn build; \
+elif [ -f package-lock.json ]; then SKIP_ENV_VALIDATION=1 npm run db:deploy && npm run build; \
+elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && SKIP_ENV_VALIDATION=1 pnpm run db:deploy && pnpm run build; \
+else echo "Lockfile not found." && exit 1; \
+fi
+
+##### RUNNER
+
+FROM --platform=linux/amd64 node:21.5.0-alpine3.18 AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+
+# ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/next.config.mjs ./
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./package.json
+
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+EXPOSE 3000
+ENV PORT 3000
+
+CMD ["node", "server.js"]
+```
+
+2. สร้างไฟล์ `.dockerignore`
+
+```dockerignore
+Dockerfile
+.dockerignore
+node_modules
+npm-debug.log
+README.md
+.next
+.git
+public/uploads
+```
+
+3. แก้ไขไฟล์ `next.config.mjs` โดยการเพิ่มส่วนของ `output`
+
+```js
+await import('./features/shared/env.mjs');
+
+/** @type {import("next").NextConfig} */
+const config = {
+  output: 'standalone', //✅ เพิ่มบันทัดนี้
+  eslint: {
+    dirs: ['.'],
+  },
+  redirects() {
+    return [
+      {
+        source: '/admin',
+        destination: '/admin/dashboard',
+        permanent: true,
+      },
+    ];
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: 'loremflickr.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cloudflare-ipfs.com',
+      },
+    ],
+  },
+};
+
+export default config;
+```
+
+4. แก้ไข `docker-compose.yml` ดังนี้
+
+```yml
+version: '3.9'
+services:
+  app:
+    platform: 'linux/amd64'
+    build:
+      context: .
+      dockerfile: Dockerfile
+      network: host
+      args:
+        NEXT_PUBLIC_CLIENTVAR: 'clientvar'
+        DATABASE_URL: 'postgresql://myapp:mypassword@localhost:9111/absence-management?schema=public'
+        NEXTAUTH_SECRET: 'p0I0oiZgFGhha0eQKzumB5Awyeqe4hQ2jmaQ4t/HuMk='
+        NEXTAUTH_URL: 'http://localhost:3000'
+        NEXTAPP_URL: 'http://localhost:3000'
+    working_dir: /app
+    volumes:
+      - ./data/uploads:/app/public/uploads
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: 'postgresql://myapp:mypassword@db:5432/absence-management?schema=public'
+    depends_on:
+      - db
+  db:
+    image: 'postgres:15.3-alpine3.18'
+    ports:
+      - '9111:5432'
+    environment:
+      POSTGRES_USER: myapp
+      POSTGRES_PASSWORD: mypassword
+    volumes:
+      - ./data/pg:/var/lib/postgresql/data
+```
+
+5. เพิ่มบรรทัดต่อไปนี้ไปยัง `.gitignore`
+
+```
+# Docker Data
+data
+```
+
+6. เพิ่มส่วนของ script `db:deploy` ไปยัง `package.json`
+
+```json
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint --fix",
+    "db:seed": "prisma db seed",
+    "db:push": "prisma db push",
+    "db:deploy": "prisma migrate deploy" //✅ เพิ่มบันทัดนี้
+  }
+}
+```
+
+7. เนื่องจาก Next.js จะไม่ทำการ serve ส่วนของโฟลเดอร์ public ตอน runtime (เราต้องเตรียมข้อมูลในโฟลเดอร์ public ให้เรียบร้อยตั้งแต่ตอน build time) นั่นทำให้โฟลเดอร์ `uploads` ของเราไม่สามารถเข้าถึงได้จาก URL โดยตรงหากการอัพโหลดนั้นเกิดขึ้นหลัง build เราจะแก้ไขปัญหานี้ด้วยการสร้าง API ที่พาธคือ `/api/uploads` ให้ทำการสร้างไฟล์ `app/api/uploads/[...path]/route.ts` ดังนี้
+
+```ts
+import { readFile } from 'fs/promises';
+
+interface Params {
+  params: {
+    path: string[];
+  };
+}
+
+export const GET = async (req: Request, { params: { path } }: Params) => {
+  const publicDir = __dirname.split('.next')[0] + 'public/uploads/';
+  const fileUrl = path.join('/');
+  const file = await readFile(`${publicDir}${fileUrl}`);
+
+  return new Response(file);
+};
+```
+
+ทำการแก้ไข `features/shared/helpers/upload.ts` เพื่อให้ใช้งาน API ดังกล่าว
+
+```ts
+import z from 'zod';
+
+export function getImagePath(file: string): string;
+export function getImagePath(file?: null): undefined;
+export function getImagePath(file?: string | null) {
+  if (!file) return;
+
+  try {
+    z.string().url().parse(file);
+    return file;
+  } catch {
+    return `/api/uploads/${file}`;
+  }
+}
+```
+
+8. รันส่วนของ db ขึ้นมาก่อนด้วยคำสั่ง `docker compose up db`
+   ถ้าต้องการสร้างใหม่ให้ลบตัวเก่าออกก่อนโดยใช้คำสั่ง `docker compose rm db` เสร็จแล้วลบไฟล์ data ออกแล้วออก คำสั่ง `docker compose up db` ใหม่
+
+9. รันส่วนของ app ขึ้นมาด้วยคำสั่ง `docker compose up app`
+
+10. ทดลองทำการใช้งาน

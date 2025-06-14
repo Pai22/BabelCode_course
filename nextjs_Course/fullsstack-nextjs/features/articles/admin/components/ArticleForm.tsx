@@ -7,14 +7,14 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { type SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as validators from '../validators';
 import type * as types from '../types';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { ArticleDetails } from '@/features/articles/types';
+import { type ArticleDetails } from '@/features/articles/types';
 import { capitalize } from 'lodash';
 import ImageUploader from '@/features/ui/components/ImageUploader';
 import { getImagePath } from '@/features/shared/helpers/upload';
@@ -44,13 +44,17 @@ const ArticleForm = (props: ArticleFormProps) => {
             image: undefined,
           },
   });
+  const handleSubmitFn = form.handleSubmit(
+    onSubmit as SubmitHandler<
+      typeof kind extends 'create'
+        ? types.AddArticleInput
+        : types.UpdateAritcleInput
+    >,
+  );
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="relative space-y-8"
-      >
+      <form onSubmit={handleSubmitFn} className="relative space-y-8">
         <h1 className="mb-4 text-center text-2xl">
           {capitalize(kind)} Article
         </h1>

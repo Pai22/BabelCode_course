@@ -5,6 +5,7 @@ import {
 } from '@/app/generated/prisma';
 import { slugify } from '@/features/shared/helpers/slugify';
 import { faker } from '@faker-js/faker';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -15,8 +16,10 @@ async function main() {
     update: {},
     create: {
       email: 'admin@babelcoder.com',
+      password: await bcrypt.hash('password', 12),
       name: 'Admin',
       role: 'ADMIN',
+      image: faker.image.avatar(),
     },
   });
   //upsert = insert + update แปลว่าถ้ามันไม่เจอข้อมูลมาก่อนมันก็จะทำการสร้างแล้วใส่ไปในฐานข้อมูล
@@ -31,6 +34,7 @@ async function main() {
     const createUserInput: Prisma.UserCreateInput = {
       name: faker.internet.displayName(),
       email: faker.internet.email(),
+      password: await bcrypt.hash(faker.internet.password(), 12),
       role: faker.helpers.arrayElement(['ADMIN', 'MANAGER', 'MEMBER']),
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call

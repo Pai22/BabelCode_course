@@ -1,5 +1,5 @@
 import {
-  UpdateAritcleInput,
+  type UpdateAritcleInput,
   type AddArticleInput,
 } from '@/features/articles/admin/types';
 import {
