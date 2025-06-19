@@ -1,11 +1,11 @@
 # array
 array คือข้อมูลที่มีหลายๆตัวและมีชนิดข้อมูลเดียวกันถูกรวมกลุ่มเข้าด้วยกัน
 
-![Array](/images/Array.png)
+![Array](/RestfulAPI_with_go/images/Array.png)
 
 ใส่ตัวแปรที่สามารถระบุเป็นตัวเลขได้
 
-![Array](/images/ArrayIndex.png)
+![Array](/RestfulAPI_with_go/images/ArrayIndex.png)
 
 # การใช้งาน slice
 การใช้ arr ที่ไม่ได้ประกาศตัวเลขนั้นเรียกว่า slice 
@@ -25,7 +25,7 @@ func main() {
 
 ```
 
-![Slice](/images/Slice.png)
+![Slice](/RestfulAPI_with_go/images/Slice.png)
 
 arr และ slice จะมีการแชร์ข้อมูลการอยู่ 
 - ถ้า slice มีการเปลี่ยนค่าใน index ใน arr ก็จะถูกเปลี่ยนไปด้วย
@@ -50,7 +50,7 @@ func main() {
 - สร้าง slice โดยไม่ต้องสร้าง arr ขึ้นมาก่อนก็สามารถทำได้ โดยใช้ syntax เหมือนกับ arr แต่ไม่ต้องระบุตัวเลข เช่น `s := []string{"A", "B", "C", "D", "E"}` 
 - ถ้าต้องการเพิ่มข้อมูลใน arr ต้องใข้ **append** เช่น `s2 := append(s,"F")`
 
-![SliceNoArr](/images/SliceNoArr.png)
+![SliceNoArr](/RestfulAPI_with_go/images/SliceNoArr.png)
 
 # การดำเนินการบน slice
 
@@ -121,7 +121,7 @@ func main() {
 # Empty Slice VS Nil Slice
 - มีสิ่งที่เหมือนกันก็คือ เป็น sline ที่มี len และ cap เป็น 0 
 - แต่ empty slice เบื่องหลักการทำงานจะมีการสร้าง arr ที่มีความยาวเป็น 0 ขึ้นมาทำให้ในส่วนของ add ptr มีค่า
-![Empty slice vs NIL slice](/images/EMSVSNILS.png)
+![Empty slice vs NIL slice](/RestfulAPI_with_go/images/EMSVSNILS.png)
 
 # การใช้งาน map
 - เข้าถึงข้อมูลด้วยการใช้ key โดยเป็น string เช่น `credits := map[string]int{}` index จะเป็น string และ value เป็น int 

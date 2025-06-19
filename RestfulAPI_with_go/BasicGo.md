@@ -81,7 +81,7 @@ func main() {
 $ go run main.go
 20
 ```
-![Basic types](/images/BasicTypes.png)
+![Basic types](/RestfulAPI_with_go/images/BasicTypes.png)
 # การใช้ const และ iota
 ### const
 ตัวแปรที่สร้างขึ้นมาสามารถเปลี่ยนค่าได้ แต่ถ้าต้องการค่าคงที่จะใช้ `const` 
