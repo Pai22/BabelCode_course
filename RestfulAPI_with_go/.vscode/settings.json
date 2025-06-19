@@ -1,0 +1,22 @@
+{
+  // ...existing code...
+  "go.useLanguageServer": true,
+  "[go]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    },
+    "editor.tabSize": 2,           // ตั้ง tab size = 8
+    "editor.insertSpaces": false   // ใช้ tab แทน space
+  },
+  "[go.mod]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
+  },
+  "gopls": { 
+    "usePlaceholders": true,
+    "staticcheck": false
+  }
+}

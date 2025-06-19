@@ -1,0 +1,11 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescriptreact]": {
+    "editor.tabSize": 2
+  },
+  "yaml.schemas": {
+    "kubernetes://schema/apps/v1%40deployment": "file:///home/nthongjor/projects/courses/intro-devops/k8s/ui.yaml",
+    "kubernetes://schema/apps/v1@deployment": "file:///home/nthongjor/projects/courses/intro-devops/k8s/deployment.yaml"
+  }
+}
