@@ -13,7 +13,9 @@ Repository ตัวแรกให้ตั้งชื่อว่า `devops-
 Repository ตัวถัดมาให้ตั้งชื่อว่า `devops-quickstart-env`
 ![create-env-repo](/DevOps_Course//Images/create-env-repo.png)
 ทำการสร้างโฟลเดอร์ในเครื่องตั้งชื่อว่า `devops-quickstart` โดยสร้างโฟลเดอร์ย่อย 2 โฟลเดอร์ชื่อ `app` และ `env`
+
 ![devops-quickstart-subrepos](/DevOps_Course//Images/devops-quickstart-subrepos.png)
+
 ทำการดาวน์โหลดซอร์จโค้ดของ app และ env ตามลิงก์ข้างล่าง จากนั้นจึงทำการ unzip และวางไฟล์บนโฟลเดอร์ต่าง ๆ อย่างถูกต้อง
 - app: [ดาวน์โหลด ](https://www.dropbox.com/scl/fi/jhkjkz9ybup2xhhktxrxc/app.zip?rlkey=46nr2dr1gg5ab4v0djx0b5aqc&e=1&st=w5vg9rit&dl=0)
 - env: [ดาวน์โหลด](https://www.dropbox.com/scl/fi/s7r7mnqwmer2e3f03wzar/env.zip?rlkey=80uki61h6f7tem3kqbr7fc1vy&e=1&st=8gbklomz&dl=0)
