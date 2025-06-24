@@ -26,3 +26,39 @@ $ ./course-go
 
 ### colud platform
 เลือกใช้ Heroku
+- ต้อง add credit card
+- พอ add แล้วจะสามารถ create ได้ 
+
+```bash
+$ heroku create
+$ git push heroku master
+```
+
+- เสร็จแล้วมันจะ deploy code `./bin/course-go` ต้องไปสร้างไฟล์ `Procfile` แล้วใส่ `web: bin/course-go` ลงไปแล้ว save แล้วออกคำสั่ง
+
+```bash
+$ git add -A
+$ git commit -m "Add Procfile"
+$ git push heroku master
+```
+
+- เพิ่มส่วนของ database ด้วยคำสั่ง
+
+```bash
+$ heroku addons:create heroku-postgresql:hobby-dev
+```
+
+- ในส่วนของ database มันใช้ `DARABASE_URL` ดังนั้นในไฟล์ `.env` จึงต้องเปลี่ยน `DATABASE_CONNECTION` -> `DARABASE_URL` แล้วใน db.go มีส่วนที่เรียกใช้ก็ต้องเปลี่ยนด้วย เสร็จแล้วก็ทำการ `$ git push heroku master`
+
+- set ค่าในไฟล์ .env เพราบน git เราไม่มี
+```bash
+$ heroku config:set SECRET_KEY=$(uuidgen)
+$ heroku config:set HOST=(url ที่ deploy ไป)
+$ heroku config:set GIN_MODE=release APP_ENV=production
+```
+
+- เสร็จแล้วทำการเช็คตัวที่เรา config ได้จากคำสั่ง แล้วเปิด
+```bash
+$ heroku config
+$ heroku open
+```
